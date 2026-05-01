@@ -29,6 +29,8 @@ Working:
 - TH/EN public app language toggle
 - YouTube tourism hero video with local image fallback
 - MapLibre map with OpenStreetMap Overpass POI layer and local brochure-map fallback
+- Numbered POI cards that focus matching map pins and open map popups
+- Product story reframed around Thai Go-style EV tourism loops plus the 8-45 THB Joint Ticket policy
 
 Reserved for next sprint:
 
@@ -228,16 +230,37 @@ Current implementation:
 - Joint Ticket 45 THB cap is represented as a policy simulation
 - MapLibre renders the map using an external demo style when internet is available
 - Nearby categories are loaded from OpenStreetMap Overpass through `/api/places/nearby`
+- POI cards use numbered pins matched to map markers; clicking a card or marker focuses the same place
 - Local brochure-map preview is shown as fallback when the map style or network is unavailable
 - Public app UI is merged from the premium prototype direction and lives in `services/web/index.html`
 
 Important provider notes:
 
 - Google star ratings are not shown by default because real ratings require Google Places API + billing.
-- Do not fake ratings in a judge-facing pitch. Use the current `OSM verified` label unless a provider key is configured.
+- Do not fake ratings or restaurant photos in a judge-facing pitch. Use the current verified map-data labels unless a provider key is configured.
 - Longdo Map API is a strong Thailand-first option if the team wants Thai map labels and local coverage.
 - Google Maps Platform is best for ratings/place photos but must be proxied through the backend.
 - TAT Data API is best for official tourism POIs/events and should become the curated tourism source of truth.
+
+## Product Narrative
+
+The current pitch position is:
+
+```txt
+Move like local, discover like traveler.
+```
+
+The app combines two ideas:
+
+- Thai Go-style tourism service: EV buses and boats connect Bangkok landmarks, food stops, malls, and cultural activities.
+- Public Joint Ticket policy: one connected trip session removes duplicate entry fees and keeps bus, rail, and boat travel inside the 8-45 THB fare logic.
+
+In product terms:
+
+- Tourists choose a landmark first.
+- Sawasdee Transit explains which rail/bus/boat layer to use.
+- The Joint Ticket QR becomes the shared validation object.
+- Map cards show nearby verified POIs with numbered pins instead of pretending to have paid Google ratings.
 
 Recommended production path:
 

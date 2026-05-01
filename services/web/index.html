@@ -89,7 +89,7 @@
       .qr-grid { display: grid; grid-template-columns: repeat(13,1fr); gap: 3px; }
       .qr-cell { aspect-ratio: 1; border-radius: 3px; background: #0f1f2e; }
       #map { height: 100%; min-height: 20rem; width: 100%; }
-      .map-marker { display: grid; width: 2rem; height: 2rem; place-items: center; border: 3px solid #fff; border-radius: 999px; color: #fff; background: #05866f; font-weight: 900; box-shadow: 0 10px 22px rgba(15,31,46,.3); }
+      .map-marker { cursor: pointer; display: grid; width: 2rem; height: 2rem; place-items: center; border: 3px solid #fff; border-radius: 999px; color: #fff; background: #05866f; font-weight: 900; box-shadow: 0 10px 22px rgba(15,31,46,.3); }
       .map-marker.active { width: 2.5rem; height: 2.5rem; background: #f26b5b; }
     </style>
   </head>
@@ -155,6 +155,26 @@
                 </label>
                 <button id="planRouteBtn" class="h-[60px] rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-6 text-base font-black text-white shadow-card transition hover:scale-[1.01]" data-i18n="planRoute">Plan route</button>
               </div>
+            </div>
+          </div>
+
+          <div class="px-5 pb-2 pt-5 lg:px-10">
+            <div class="grid gap-3 lg:grid-cols-3">
+              <article class="rounded-[1.5rem] bg-transit-ink p-5 text-white shadow-card">
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-gold">Tourism layer</p>
+                <h3 class="mt-2 text-xl font-black">Thai Go-style EV loop</h3>
+                <p class="mt-2 text-sm font-semibold leading-6 text-white/72">Connect temples, riverfront malls, Yaowarat, and workshop/food stops through buses and boats tourists can understand.</p>
+              </article>
+              <article class="rounded-[1.5rem] bg-white p-5 shadow-card">
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Public policy layer</p>
+                <h3 class="mt-2 text-xl font-black">8-45 THB Joint Ticket</h3>
+                <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">One trip session removes duplicate entry fees and caps connected bus, rail, and boat journeys at 45 THB.</p>
+              </article>
+              <article class="rounded-[1.5rem] bg-transit-mint p-5 shadow-card">
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Product promise</p>
+                <h3 class="mt-2 text-xl font-black">Landmark first, mode second</h3>
+                <p class="mt-2 text-sm font-semibold leading-6 text-transit-teal/75">Visitors choose where they want to go. The app explains what to board, where to transfer, and why the fare is fair.</p>
+              </article>
             </div>
           </div>
 
@@ -237,7 +257,7 @@
           <div class="mb-5">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="wowFactor">The wow factor</p>
             <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="ticketTitle">3D Holographic Joint Ticket</h2>
-            <p id="ticketGuide" class="mt-2 text-sm font-bold leading-6 text-slate-500">Sign in once, issue your tourist pass, then show the live QR at each supported gate or staff checkpoint.</p>
+            <p id="ticketGuide" class="mt-2 text-sm font-bold leading-6 text-slate-500">Sign in once, issue a Thai Go-style day pass, then let the Joint Ticket cap protect every connected scan across EV bus, boat, and rail.</p>
           </div>
 
           <form id="ticketForm" class="mb-5 grid gap-3 rounded-[2rem] bg-white p-4 shadow-card lg:grid-cols-[1fr_1fr_auto]">
@@ -254,7 +274,7 @@
               <section class="ticket-face holo-card absolute inset-0 rounded-[1.75rem] p-6 text-white shadow-soft">
                 <div class="relative z-10 flex h-full flex-col justify-between">
                   <div class="flex items-start justify-between">
-                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-white/70">Sawasdee Transit</p><h3 class="mt-2 text-2xl font-black">Tourist Joint Pass</h3></div>
+                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-white/70">Sawasdee Transit</p><h3 class="mt-2 text-2xl font-black">Thai Go Joint Day Pass</h3></div>
                     <span id="ticketStatus" class="rounded-full bg-white/16 px-3 py-2 text-xs font-black backdrop-blur">READY</span>
                   </div>
                   <div>

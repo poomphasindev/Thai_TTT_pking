@@ -9,29 +9,30 @@ const state = {
   activeTicketId: localStorage.getItem("activeTicketId"),
   map: null,
   markers: [],
+  visiblePlaces: [],
   countdownSeconds: 299,
 };
 
 const copy = {
   en: {
-    brandSub: "Bangkok Tourist Mobility OS",
+    brandSub: "Thai Go tourism loop + Joint Ticket policy",
     navRoute: "Route",
     navExplore: "Explore",
     navTicket: "Ticket",
     navReport: "Report",
     heroBadge: "Bangkok-only pilot",
-    heroTitle: "Navigate Bangkok like a local.",
-    heroBody: "Landmark-first routing, transparent multimodal fares, and a live digital Joint Ticket for rail, bus, and boat.",
+    heroTitle: "Move like local, discover like traveler.",
+    heroBody: "A tourist-first mobility layer that blends Thai Go-style EV bus and boat loops with an 8-45 THB public Joint Ticket cap.",
     origin: "Origin",
     destination: "Destination landmark",
     planRoute: "Plan route",
-    recommendedRoute: "Recommended route",
+    recommendedRoute: "Best integrated journey",
     finalFare: "Final fare",
     time: "Time",
     stops: "Stops",
     saved: "Saved",
     fareBreakdown: "Receipt-style fare breakdown",
-    routeDetails: "Step-by-step journey",
+    routeDetails: "What to do next",
     exploreAround: "Explore around destination",
     touristContext: "Tourist context",
     wowFactor: "The wow factor",
@@ -41,24 +42,24 @@ const copy = {
     reportBody: "Manual-first reporting with category, place, time, vehicle ID, and photo evidence. Vision AI can be added later without changing this flow.",
   },
   th: {
-    brandSub: "ระบบเดินทางท่องเที่ยวกรุงเทพฯ",
+    brandSub: "ระบบท่องเที่ยว Thai Go + นโยบายตั๋วร่วม",
     navRoute: "เส้นทาง",
     navExplore: "สำรวจ",
     navTicket: "บัตร",
     navReport: "แจ้งปัญหา",
     heroBadge: "โครงการนำร่องกรุงเทพฯ",
-    heroTitle: "เที่ยวกรุงเทพฯ แบบรู้ทาง รู้ราคา และใช้บัตรเดียวจบ",
-    heroBody: "เส้นทางแบบยึดแลนด์มาร์ก ค่าโดยสารโปร่งใส และบัตรตั๋วร่วมดิจิทัลสำหรับรถไฟฟ้า รถเมล์ และเรือ",
+    heroTitle: "เดินทางเหมือนคนพื้นที่ เที่ยวเหมือนนักเดินทาง",
+    heroBody: "รวมแนวคิด Thai Go รถบัส/เรือ EV สำหรับท่องเที่ยว เข้ากับเพดานตั๋วร่วม 8-45 บาทให้ใช้เข้าใจง่ายในแอพเดียว",
     origin: "ต้นทาง",
     destination: "แลนด์มาร์กปลายทาง",
     planRoute: "ค้นหาเส้นทาง",
-    recommendedRoute: "เส้นทางแนะนำ",
+    recommendedRoute: "เส้นทางรวมที่แนะนำ",
     finalFare: "จ่ายจริง",
     time: "เวลา",
     stops: "สถานี",
     saved: "ประหยัด",
     fareBreakdown: "รายละเอียดค่าโดยสารแบบใบเสร็จ",
-    routeDetails: "ลำดับการเดินทาง",
+    routeDetails: "ต้องทำอะไรต่อ",
     exploreAround: "สำรวจรอบจุดหมาย",
     touristContext: "บริบทสำหรับนักท่องเที่ยว",
     wowFactor: "ฟีเจอร์เด่น",
@@ -134,43 +135,43 @@ const landmarks = [
 
 const routeModes = {
   rail: {
-    title: { en: "Rail-first route with gated transfer", th: "เส้นทางหลักด้วยรถไฟฟ้าและต่อระบบ" },
-    note: { en: "Best default for tourists: clear stations, short walking, and capped daily billing.", th: "เหมาะสุดสำหรับนักท่องเที่ยว: สถานีชัด เดินน้อย และมีเพดานค่าโดยสารรายวัน" },
+    title: { en: "Joint Ticket: rail spine + EV feeder", th: "ตั๋วร่วม: รถไฟฟ้าแกนหลัก + EV feeder" },
+    note: { en: "Use rail for the long segment, then connect to the tourist loop without paying duplicate entry fees.", th: "ใช้รถไฟฟ้าเป็นแกนหลัก แล้วต่อเข้าโครงข่ายท่องเที่ยวโดยไม่เสียค่าแรกเข้าซ้ำ" },
     time: 28,
     stops: 8,
     fare: 49,
     total: 45,
     lines: [
-      { label: "BTS first segment", fare: 17 },
-      { label: "MRT / river connection", fare: 32 },
+      { label: "Rail base fare + distance", fare: 33 },
+      { label: "EV feeder / pier connector", fare: 16 },
     ],
     steps: [
-      { icon: "1", title: "Start from origin node", th: "เริ่มจากสถานีต้นทาง", detail: "Walk to {originNode}. Keep the Joint Ticket ready before entering the paid area.", detailTh: "เดินไปที่ {originNode} เตรียมบัตรตั๋วร่วมก่อนเข้าสถานี" },
-      { icon: "2", title: "Scan QR at first gate", th: "สแกน QR ที่ประตูแรก", detail: "Show the live QR. Backend records operator, station, time, and charged fare.", detailTh: "แสดง QR แบบ live ระบบบันทึกผู้ให้บริการ สถานี เวลา และค่าโดยสารที่ถูกคิด" },
-      { icon: "3", title: "Transfer using the same pass", th: "ต่อระบบด้วยบัตรเดิม", detail: "At interchange, keep the same QR. The cap engine prevents charging over 45 THB today.", detailTh: "ตอนเปลี่ยนสายใช้ QR เดิม ระบบ cap จะไม่คิดเกิน 45 บาทต่อวัน" },
-      { icon: "4", title: "Arrive near landmark", th: "ถึงสถานีใกล้แลนด์มาร์ก", detail: "Exit at {destNode}, then follow the walking hint to {destination}.", detailTh: "ออกที่ {destNode} แล้วเดินต่อไปยัง {destination}" },
+      { icon: "1", title: "Choose the landmark, not the line", th: "เลือกแลนด์มาร์ก ไม่ต้องเลือกสายเอง", detail: "Start at {originNode}. The app picks the rail spine and tourist feeder for {destination}.", detailTh: "เริ่มที่ {originNode} แอพเลือกแกนรถไฟฟ้าและ feeder ท่องเที่ยวไป {destination} ให้" },
+      { icon: "2", title: "Scan once into the Joint Ticket session", th: "สแกนครั้งแรกเพื่อเปิด session ตั๋วร่วม", detail: "The backend starts one trip session and stops duplicate entry fees across connected modes.", detailTh: "backend เปิด trip session เดียว และกันค่าแรกเข้าซ้ำเมื่อเปลี่ยนระบบ" },
+      { icon: "3", title: "Transfer to EV bus / boat loop", th: "ต่อรถบัส EV หรือเรือ EV loop", detail: "At the interchange, show the same QR to the Thai Go-style operator or gate staff.", detailTh: "ถึงจุดต่อระบบ แสดง QR เดิมกับผู้ให้บริการแบบ Thai Go หรือเจ้าหน้าที่" },
+      { icon: "4", title: "Arrive with capped billing", th: "ถึงจุดหมายพร้อมค่าโดยสารมีเพดาน", detail: "Exit near {destNode}. The trip stays inside the 45 THB cap simulation.", detailTh: "ออกใกล้ {destNode} และค่าโดยสารอยู่ในเพดานจำลอง 45 บาท" },
     ],
   },
   bus: {
-    title: { en: "Budget route with bus corridor", th: "เส้นทางประหยัดด้วยรถเมล์" },
-    note: { en: "Lower fare, but time varies with traffic. Useful when tourists are not in a rush.", th: "ถูกกว่าแต่เวลาแปรผันตามรถติด เหมาะเมื่อไม่รีบ" },
+    title: { en: "Thai Go Day Loop: EV bus focused", th: "Thai Go Day Loop: เน้นรถบัส EV" },
+    note: { en: "Tourism-first loop for hop-on/hop-off style travel. Cheaper, clearer, and more local than point-to-point taxi.", th: "loop ท่องเที่ยวแบบขึ้นลงได้หลายจุด ถูกและเข้าใจง่ายกว่าเรียกรถเป็นเที่ยว" },
     time: 42,
     stops: 12,
     fare: 24,
     total: 24,
     lines: [
-      { label: "Air-conditioned city bus", fare: 24 },
-      { label: "Walking connection", fare: 0 },
+      { label: "EV bus base fare", fare: 8 },
+      { label: "Distance component, approx. 16 km", fare: 16 },
     ],
     steps: [
-      { icon: "1", title: "Walk to verified bus stop", th: "เดินไปป้ายรถเมล์ที่ตรวจสอบแล้ว", detail: "The app points to the stop closest to {originNode}.", detailTh: "แอพชี้ป้ายที่ใกล้ {originNode} ที่สุด" },
-      { icon: "2", title: "Board and show QR to staff", th: "ขึ้นรถและแสดง QR", detail: "The conductor can validate the pass or record a manual ticket ID.", detailTh: "กระเป๋ารถสามารถตรวจบัตรหรือบันทึก ticket ID แบบ manual ได้" },
-      { icon: "3", title: "Get off near destination cluster", th: "ลงใกล้โซนจุดหมาย", detail: "Use the map pins to walk from the stop to {destination}.", detailTh: "ใช้ pin บนแผนที่เดินจากป้ายไปยัง {destination}" },
+      { icon: "1", title: "Walk to the EV loop stop", th: "เดินไปป้าย EV loop", detail: "Use the numbered map pin closest to {originNode}.", detailTh: "ใช้ pin หมายเลขที่ใกล้ {originNode} ที่สุด" },
+      { icon: "2", title: "Board with QR, no cash confusion", th: "ขึ้นรถด้วย QR ไม่สับสนเรื่องเงินสด", detail: "The pass records boarding time, route, and fare split for operators.", detailTh: "บัตรบันทึกเวลาขึ้น เส้นทาง และการแบ่งค่าโดยสารให้ผู้ให้บริการ" },
+      { icon: "3", title: "Hop off at landmark cluster", th: "ลงที่ cluster แลนด์มาร์ก", detail: "Use the destination POI cards to pick food, shopping, or cultural stops around {destination}.", detailTh: "ใช้การ์ด POI เลือกร้านอาหาร ห้าง หรือจุดเที่ยวรอบ {destination}" },
     ],
   },
   boat: {
-    title: { en: "Scenic rail + Chao Phraya boat", th: "เส้นทางชมวิว รถไฟฟ้า + เรือเจ้าพระยา" },
-    note: { en: "Most photogenic for riverside landmarks. The fare cap still keeps the pitch story simple.", th: "เหมาะกับแลนด์มาร์กริมแม่น้ำและการถ่ายรูป โดยยังมีเพดานค่าโดยสารให้เล่า pitch ง่าย" },
+    title: { en: "River Discovery: rail + EV boat", th: "River Discovery: รถไฟฟ้า + เรือ EV" },
+    note: { en: "Best for Wat Arun, Grand Palace, ICONSIAM, and sunset tourism while keeping fare logic transparent.", th: "เหมาะกับวัดอรุณ พระบรมมหาราชวัง ไอคอนสยาม และการเที่ยวริมน้ำ โดยค่าโดยสารโปร่งใส" },
     time: 45,
     stops: 7,
     fare: 66,
@@ -255,6 +256,7 @@ function renderRoute() {
       <div class="border-t border-dashed border-slate-300 pt-3 flex justify-between text-slate-500"><span>Subtotal without policy cap</span><span>${mode.fare} THB</span></div>
       <div class="rounded-2xl bg-amber-100 px-4 py-3 flex justify-between gap-4 font-black text-amber-800"><span>Joint Ticket Cap Applied</span><span>-${saved} THB</span></div>
       <div class="flex items-end justify-between pt-1"><span class="text-base font-black">Total billed today</span><span class="text-3xl font-black text-transit-teal">${mode.total} THB</span></div>
+      <p class="rounded-2xl bg-white px-4 py-3 text-xs leading-5 text-slate-500">Policy logic: bus starts at 8 THB plus distance, rail starts at 15 THB plus distance, and one connected journey is capped at 45 THB. Thai Go-style tourism loops become the visitor-friendly feeder layer.</p>
     </div>`;
 
   $("#routeSteps").innerHTML = mode.steps.map((step, index) => {
@@ -331,18 +333,22 @@ async function loadPlaces(dest, fallback) {
 }
 
 function renderPoiCards(places) {
+  state.visiblePlaces = places;
   $("#poiCarousel").innerHTML = places.map((place, index) => {
     const image = place.image || imageForCategory(state.placeCategory, index);
-    const label = index === 0 ? "Destination" : place.source === "OpenStreetMap" ? "OSM verified" : place.source;
+    const label = index === 0 ? "Destination" : place.source === "OpenStreetMap" ? "Verified map data" : place.source;
     const distance = place.distance_m ? ` · ${place.distance_m}m` : "";
     return `
-      <article class="min-w-[250px] overflow-hidden rounded-[1.75rem] bg-white shadow-card">
-        <img class="h-36 w-full object-cover" src="${image}" alt="${escapeHtml(place.name)}" />
+      <article data-poi-index="${index}" class="min-w-[260px] cursor-pointer overflow-hidden rounded-[1.75rem] bg-white shadow-card transition hover:-translate-y-1">
+        <div class="relative">
+          <img class="h-36 w-full object-cover" src="${image}" alt="${escapeHtml(place.name)}" />
+          <span class="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-transit-ink text-sm font-black text-white shadow-card">${index === 0 ? "★" : index}</span>
+        </div>
         <div class="p-4">
           <span class="rounded-full ${index === 0 ? "bg-transit-mint text-transit-teal" : "bg-blue-100 text-transit-blue"} px-3 py-1 text-xs font-black">${label}</span>
           <h3 class="mt-3 text-lg font-black">${escapeHtml(place.name)}</h3>
           <p class="mt-1 text-sm font-semibold text-slate-500">${escapeHtml(place.kind || "POI")}${distance}</p>
-          <p class="mt-2 text-xs font-bold text-slate-400">Ratings can be upgraded with Google Places key.</p>
+          <p class="mt-2 text-xs font-bold text-slate-400">Tap to focus this numbered map pin.</p>
         </div>
       </article>`;
   }).join("");
@@ -353,11 +359,32 @@ function renderPoiCards(places) {
       const el = document.createElement("div");
       el.className = `map-marker ${index === 0 ? "active" : ""}`;
       el.textContent = index === 0 ? "★" : String(index);
-      return new maplibregl.Marker({ element: el }).setLngLat([place.longitude, place.latitude]).addTo(state.map);
+      el.addEventListener("click", () => focusPlace(index));
+      const popup = new maplibregl.Popup({ offset: 20, closeButton: false }).setHTML(popupHtml(place, index));
+      return new maplibregl.Marker({ element: el }).setLngLat([place.longitude, place.latitude]).setPopup(popup).addTo(state.map);
     });
     const dest = currentDestination();
     state.map.flyTo({ center: [dest.lng, dest.lat], zoom: 14, essential: false });
   }
+}
+
+function focusPlace(index) {
+  const place = state.visiblePlaces[index];
+  if (!place || !state.map) return;
+  state.map.flyTo({ center: [place.longitude, place.latitude], zoom: index === 0 ? 14.5 : 16, essential: true });
+  const marker = state.markers[index];
+  if (marker) marker.togglePopup();
+}
+
+function popupHtml(place, index) {
+  const pin = index === 0 ? "Destination" : `Stop ${index}`;
+  const distance = place.distance_m ? `${place.distance_m}m from landmark` : place.source;
+  return `
+    <div style="font-family: Inter, sans-serif; min-width: 190px;">
+      <div style="font-size: 11px; font-weight: 900; color: #05866f; text-transform: uppercase;">${pin}</div>
+      <div style="margin-top: 4px; font-size: 15px; font-weight: 900; color: #0f1f2e;">${escapeHtml(place.name)}</div>
+      <div style="margin-top: 4px; font-size: 12px; font-weight: 700; color: #64748b;">${escapeHtml(place.kind || "POI")} · ${escapeHtml(distance)}</div>
+    </div>`;
 }
 
 function imageForCategory(category, index) {
@@ -405,6 +432,11 @@ function wireEvents() {
     state.placeCategory = button.dataset.placeCategory;
     renderExplore();
   }));
+  $("#poiCarousel").addEventListener("click", (event) => {
+    const card = event.target.closest("[data-poi-index]");
+    if (!card) return;
+    focusPlace(Number(card.dataset.poiIndex));
+  });
   $("#fareToggle").addEventListener("click", () => {
     $("#farePanel").classList.toggle("hidden");
     $("#fareChevron").classList.toggle("rotate-180");
