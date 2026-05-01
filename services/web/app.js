@@ -439,6 +439,7 @@ function renderPoiCards(places) {
     const image = place.image || imageForCategory(state.placeCategory, index);
     const label = index === 0 ? "Destination" : place.source === "OpenStreetMap" ? "Verified map data" : place.source;
     const distance = place.distance_m ? ` · ${place.distance_m}m` : "";
+    const mapsUrl = googleMapsUrl(place);
     return `
       <article data-poi-index="${index}" class="min-w-[260px] cursor-pointer overflow-hidden rounded-[1.75rem] bg-white shadow-card transition hover:-translate-y-1">
         <div class="relative">
@@ -447,9 +448,13 @@ function renderPoiCards(places) {
         </div>
         <div class="p-4">
           <span class="rounded-full ${index === 0 ? "bg-transit-mint text-transit-teal" : "bg-blue-100 text-transit-blue"} px-3 py-1 text-xs font-black">${label}</span>
+          <div class="mt-3 flex items-center gap-1 text-sm font-black text-amber-500" aria-label="Mock five star rating">★★★★★ <span class="ml-1 text-xs text-slate-400">5.0 demo</span></div>
           <h3 class="mt-3 text-lg font-black">${escapeHtml(place.name)}</h3>
           <p class="mt-1 text-sm font-semibold text-slate-500">${escapeHtml(place.kind || "POI")}${distance}</p>
-          <p class="mt-2 text-xs font-bold text-slate-400">Tap to focus this numbered map pin.</p>
+          <div class="mt-3 flex items-center justify-between gap-2">
+            <p class="text-xs font-bold text-slate-400">Tap card to focus pin.</p>
+            <a href="${mapsUrl}" target="_blank" rel="noopener" class="rounded-full bg-transit-ink px-3 py-2 text-xs font-black text-white" onclick="event.stopPropagation()">Google Maps</a>
+          </div>
         </div>
       </article>`;
   }).join("");
@@ -480,12 +485,21 @@ function focusPlace(index) {
 function popupHtml(place, index) {
   const pin = index === 0 ? "Destination" : `Stop ${index}`;
   const distance = place.distance_m ? `${place.distance_m}m from landmark` : place.source;
+  const mapsUrl = googleMapsUrl(place);
   return `
     <div style="font-family: Inter, sans-serif; min-width: 190px;">
       <div style="font-size: 11px; font-weight: 900; color: #05866f; text-transform: uppercase;">${pin}</div>
       <div style="margin-top: 4px; font-size: 15px; font-weight: 900; color: #0f1f2e;">${escapeHtml(place.name)}</div>
+      <div style="margin-top: 4px; font-size: 12px; font-weight: 800; color: #f59e0b;">★★★★★ 5.0 demo</div>
       <div style="margin-top: 4px; font-size: 12px; font-weight: 700; color: #64748b;">${escapeHtml(place.kind || "POI")} · ${escapeHtml(distance)}</div>
+      <a href="${mapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top:10px; border-radius:999px; background:#0f1f2e; color:white; padding:8px 10px; font-size:12px; font-weight:900; text-decoration:none;">Open Google Maps</a>
     </div>`;
+}
+
+function googleMapsUrl(place) {
+  const lat = Number(place.latitude).toFixed(6);
+  const lng = Number(place.longitude).toFixed(6);
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
 
 function imageForCategory(category, index) {

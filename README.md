@@ -33,6 +33,7 @@ Working:
 - Product story reframed around destination-first EV tourism loops plus an 8-45 THB fair-fare cap
 - AI Trip Intelligence section showing where RAG fits in the user journey
 - Gemini-backed `/api/copilot/ask` endpoint with domain guard and low-token answers
+- Structured copilot fallback prevents truncated or overly short Gemini replies
 - Passenger-side and operator-side payment confirmation simulation
 - Journey control cards for scan, transfer, and lost-passenger recovery
 
@@ -250,7 +251,8 @@ Current implementation:
 Important provider notes:
 
 - Google star ratings are not shown by default because real ratings require Google Places API + billing.
-- Do not fake ratings or restaurant photos in a judge-facing pitch. Use the current verified map-data labels unless a provider key is configured.
+- POI cards currently show a pitch mock `5.0 demo` rating and link to the exact Google Maps coordinate.
+- Do not present mock ratings as live Google review data unless Google Places is configured.
 - Longdo Map API is a strong Thailand-first option if the team wants Thai map labels and local coverage.
 - Google Maps Platform is best for ratings/place photos but must be proxied through the backend.
 - TAT Data API is best for official tourism POIs/events and should become the curated tourism source of truth.

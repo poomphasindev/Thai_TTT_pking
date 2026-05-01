@@ -92,9 +92,25 @@ def fallback_answer(payload: CopilotAsk) -> CopilotAnswer:
             else "Sorry, I can only help with Bangkok tourist transit, fares, QR ticketing, transfers, safety, and destination guidance."
         )
     elif payload.language == "th":
-        text = f"สำหรับ {payload.destination}: ไปตามจุดขึ้นรถ/สถานีที่แนะนำ สแกน QR เพื่อเปิด fare session เดียว ถ้าต่อรถหรือเรือให้ใช้ QR เดิม ระบบจะคิดเงินเพิ่มเฉพาะส่วนที่ยังไม่เกิน {payload.fare_cap_thb} บาท ถ้าหลงทางให้กดถาม AI เพื่อ re-plan จากตำแหน่งปัจจุบัน"
+        remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
+        text = (
+            f"สำหรับ {payload.destination}:\n"
+            f"1. เมื่อถึงพื้นที่ปลายทาง ให้ดูป้ายทางออกหรือท่าเรือที่ใกล้ที่สุดก่อน แล้วเทียบกับจุดบนแผนที่ในแอพ\n"
+            f"2. สแกน QR ตอนขึ้นระบบแรก และสแกน QR เดิมทุกครั้งที่ต่อรถ รถไฟฟ้า หรือเรือ เพื่อให้ระบบรู้ว่าเป็น trip session เดียว\n"
+            f"3. ตอนนี้คุณจ่ายแล้ว {payload.fare_billed_thb}/{payload.fare_cap_thb} บาท ระบบจะคิดเพิ่มได้อีกสูงสุด {remaining} บาทก่อนถึงเพดาน\n"
+            "4. ถ้าหลงทางหรือแวะกลางทาง ให้ไม่ต้องออกบัตรใหม่ ให้ถาม AI เพื่อ re-plan จากตำแหน่งปัจจุบันและใช้บัตรเดิมต่อ\n"
+            "5. ก่อนเข้าพื้นที่ท่องเที่ยว ให้เช็กมารยาทท้องถิ่น เวลาเปิด-ปิด และจุดปลอดภัย เช่น ทางออกหลักหรือจุดพบเจ้าหน้าที่"
+        )
     else:
-        text = f"For {payload.destination}: follow the recommended station, pier, or feeder stop, scan the QR once to start one fare session, and use the same QR when transferring. You will only be charged up to the {payload.fare_cap_thb} THB cap. If lost, ask AI to re-plan from your current location."
+        remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
+        text = (
+            f"For {payload.destination}:\n"
+            "1. When you arrive near the destination area, first check the recommended exit, pier, or stop and match it with the map pin in the app.\n"
+            "2. Scan the QR when entering the first mode, then use the same QR for every transfer so the backend keeps one connected fare session.\n"
+            f"3. You have been billed {payload.fare_billed_thb}/{payload.fare_cap_thb} THB today, so the next scans can charge at most {remaining} THB before the cap.\n"
+            "4. If you get lost or make a stop midway, do not issue a new pass. Ask AI to re-plan from your current location and keep using the same ticket.\n"
+            "5. Before entering the attraction, check local etiquette, opening hints, and safe meeting points such as the main exit or staffed area."
+        )
 
     return CopilotAnswer(answer=text, used_model="fallback", fallback=True, suggestions=suggestions(payload.language))
 
@@ -124,15 +140,16 @@ async def ask_copilot(payload: CopilotAsk) -> CopilotAnswer:
 {build_context(payload)}
 Instruction:
 - {language_rule}
-- Keep the answer under 90 words.
-- Use 2-4 short bullet-like sentences, no markdown table.
-- Be practical: next action, where to scan, payment/cap impact, what to do if lost.
+- Do not be too short. Thai answers must be at least 450 Thai characters. English answers must be at least 120 words.
+- Use exactly 5 compact bullets with these meanings: arrival point, where to scan QR, payment/cap impact, transfer or lost recovery, local tip.
+- Be practical and complete. Finish every sentence.
+- No markdown table.
 - If asked outside scope, politely refuse and redirect.
 Question: {payload.question}
 """
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.25, "maxOutputTokens": 180},
+        "generationConfig": {"temperature": 0.3, "maxOutputTokens": 520},
     }
 
     try:
@@ -150,9 +167,19 @@ Question: {payload.question}
     cleaned = re.sub(r"\n{3,}", "\n\n", text).strip()
     if not cleaned:
         return fallback_answer(payload)
+    if is_too_short(cleaned, payload.language):
+        fallback = fallback_answer(payload)
+        fallback.used_model = f"{GEMINI_MODEL}+structured-fallback"
+        return fallback
     return CopilotAnswer(answer=cleaned, used_model=GEMINI_MODEL, fallback=False, suggestions=suggestions(payload.language))
 
 
 def extract_text(payload: dict) -> str:
     parts = payload.get("candidates", [{}])[0].get("content", {}).get("parts", [])
     return "\n".join(part.get("text", "") for part in parts if part.get("text"))
+
+
+def is_too_short(text: str, language: str) -> bool:
+    if language == "th":
+        return len(text) < 360
+    return len(text.split()) < 90
