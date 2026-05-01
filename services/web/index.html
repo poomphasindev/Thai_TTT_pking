@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sawasdee Transit</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="app-page thai-go-shell">
+    <header class="app-header">
+      <a class="brand" href="#home" aria-label="Sawasdee Transit home">
+        <span class="brand-mark">ST</span>
+        <span>
+          <strong>Sawasdee Transit</strong>
+          <small>Bangkok tourist mobility</small>
+        </span>
+      </a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="#plan">Route</a>
+        <a href="#ticket">Pass</a>
+        <a href="#report">Report</a>
+        <a href="/admin.html">Ops</a>
+      </nav>
+    </header>
+
+    <main id="home">
+      <section class="tourism-hero">
+        <div class="hero-media" aria-label="Wat Arun and Chao Phraya River">
+          <img src="/assets/wat-arun-hero.jpg" alt="Wat Arun by the Chao Phraya River" />
+          <div class="hero-gradient"></div>
+          <div class="hero-floating-card">
+            <span>ตั๋วร่วม Tourist Pass</span>
+            <strong>45 THB cap</strong>
+            <small>Rail + bus + boat demo</small>
+          </div>
+        </div>
+        <div class="hero-copy gov-card">
+          <p class="eyebrow">Official-feeling tourist transit</p>
+          <h1>เที่ยวกรุงเทพฯ แบบรู้ทาง รู้ราคา และใช้บัตรเดียวจบ</h1>
+          <p class="hero-text">
+            รวม route planner สำหรับแลนด์มาร์ก, ตั๋วร่วม QR ที่จำลอง fare cap และระบบแจ้งปัญหาเมืองสำหรับนักท่องเที่ยวใน flow เดียว
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#plan">ค้นหาเส้นทาง</a>
+            <a class="button secondary" href="#ticket">เปิดบัตรเดินทาง</a>
+          </div>
+          <div class="hero-metrics">
+            <div><strong>8-45</strong><span>บาท fare cap</span></div>
+            <div><strong>3</strong><span>โหมดหลัก</span></div>
+            <div><strong>24h</strong><span>tourist pass</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <section id="plan" class="route-screen">
+          <div class="route-top">
+            <div class="route-toolbar">
+              <a class="back-pill" href="#home" aria-label="Back to top">‹ กลับ</a>
+              <div>
+                <p class="eyebrow">Smart route</p>
+                <h2>ผลการค้นหาเส้นทาง</h2>
+              </div>
+              <span class="mini-logo">ST</span>
+            </div>
+
+            <div class="route-search-card">
+              <label>
+                จาก
+                <select id="routeOrigin">
+                  <option value="Nana" data-code="BTS E3">นานา</option>
+                  <option value="Siam" data-code="BTS CEN">สยาม</option>
+                  <option value="Suvarnabhumi Airport" data-code="ARL A1">สนามบินสุวรรณภูมิ</option>
+                  <option value="Asok" data-code="BTS E4">อโศก</option>
+                </select>
+              </label>
+              <button class="swap-button" id="swapRoute" type="button" aria-label="Swap route">⇄</button>
+              <label>
+                ถึง
+                <select id="routeDestination">
+                  <option value="Wat Mangkon" data-code="MRT BL29">วัดมังกร</option>
+                  <option value="Wat Arun" data-code="Pier N8">วัดอรุณ</option>
+                  <option value="Grand Palace" data-code="Pier N9">พระบรมมหาราชวัง</option>
+                  <option value="ICONSIAM" data-code="Pier CAT">ไอคอนสยาม</option>
+                </select>
+              </label>
+              <button class="button light" id="simulateRoute" type="button">คำนวณเส้นทาง</button>
+            </div>
+
+            <div class="station-banner">
+              <div>
+                <span>จาก</span>
+                <strong id="originName">นานา</strong>
+                <p><b>BTS</b> <em>E3</em></p>
+              </div>
+              <div>
+                <span>ถึง</span>
+                <strong id="destinationName">วัดมังกร</strong>
+                <p><b class="mrt">MRT</b> <em>BL29</em></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="route-sheet">
+            <div class="recommend-head">
+              <h3>เส้นทางแนะนำ</h3>
+              <span>Landmark-first planner</span>
+            </div>
+
+            <div class="recommend-grid" id="recommendGrid">
+              <button class="recommend-card active" data-route-index="0" type="button">
+                <span>ถูกที่สุด</span>
+                <strong>49 บาท</strong>
+                <small>20 นาที · 9 สถานี</small>
+              </button>
+              <button class="recommend-card" data-route-index="1" type="button">
+                <span>เร็วที่สุด</span>
+                <strong>45 บาท</strong>
+                <small>18 นาที · 10 สถานี</small>
+              </button>
+              <button class="recommend-card" data-route-index="2" type="button">
+                <span>เที่ยวสวยสุด</span>
+                <strong>45 บาท</strong>
+                <small>42 นาที · boat view</small>
+              </button>
+            </div>
+
+            <div class="route-summary-strip" id="routeSummaryStrip">
+              <div><strong>49</strong><span>บาท</span></div>
+              <div><strong>~20</strong><span>นาที</span></div>
+              <div><strong>9</strong><span>สถานี</span></div>
+            </div>
+
+            <div class="all-routes">
+              <div class="subhead-row">
+                <h3>เส้นทางทั้งหมด</h3>
+                <p>* เวลาโดยประมาณ ไม่รวมเวลารอรถไฟฟ้า/เรือ</p>
+              </div>
+              <div id="routeList" class="route-list-dense"></div>
+            </div>
+
+            <div class="route-detail-panel">
+              <div class="subhead-row">
+                <h3>รายละเอียดเส้นทาง</h3>
+                <button class="button secondary compact" id="copyRoute" type="button">คัดลอกสรุป</button>
+              </div>
+              <div id="routeDetail" class="route-detail"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="ticket" class="surface premium-ticket-zone">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Digital joint ticket</p>
+              <h2>บัตรเดินทาง QR แบบแตะใช้จริง</h2>
+            </div>
+            <button class="button secondary compact" id="refreshTicket" type="button">Refresh</button>
+          </div>
+
+          <div class="ticket-layout refined">
+            <form id="ticketForm" class="pass-form">
+              <label>
+                Passenger name
+                <input name="holder_name" value="Poom Tourist" maxlength="120" required />
+              </label>
+              <div class="grid-2">
+                <label>
+                  Origin
+                  <input name="origin" value="Nana" maxlength="160" required />
+                </label>
+                <label>
+                  Destination
+                  <input name="destination" value="Wat Mangkon" maxlength="160" required />
+                </label>
+              </div>
+              <input name="pass_type" type="hidden" value="tourist_day_pass" />
+              <button class="button primary" type="submit">ออกบัตรตั๋วร่วม</button>
+              <p id="ticketMessage" class="message" role="status"></p>
+            </form>
+
+            <article class="pass-device" id="ticketCard">
+              <button class="pass-flip-button" id="flipTicket" type="button">แตะเพื่อแสดง QR</button>
+              <div class="pass-card-inner" id="passCardInner">
+                <section class="pass-face pass-front">
+                  <div class="pass-topline">
+                    <span>Sawasdee Transit</span>
+                    <strong id="ticketStatus">Not created</strong>
+                  </div>
+                  <div class="pass-chip"></div>
+                  <h3>Tourist Joint Pass</h3>
+                  <p id="ticketHolder">-</p>
+                  <div class="pass-route">
+                    <span id="passOrigin">Nana</span>
+                    <i></i>
+                    <span id="passDestination">Wat Mangkon</span>
+                  </div>
+                  <div class="ticket-meta">
+                    <div><span>Used</span><strong><span id="ticketUsed">0</span>/45 THB</strong></div>
+                    <div><span>Rides</span><strong id="ticketRides">0</strong></div>
+                    <div><span>Valid until</span><strong id="ticketValid">-</strong></div>
+                  </div>
+                </section>
+
+                <section class="pass-face pass-back">
+                  <div class="qr-shell">
+                    <div class="qr-empty" id="qrEmpty">Generate ticket first</div>
+                    <img id="ticketQr" alt="Joint ticket QR" hidden />
+                  </div>
+                  <p>Show this QR at rail, bus, or boat operator gate.</p>
+                </section>
+              </div>
+            </article>
+          </div>
+
+          <div class="tap-console refined">
+            <div class="section-head inline">
+              <div>
+                <p class="eyebrow">Gate simulation</p>
+                <h3>แตะบัตรและคุมค่าโดยสารไม่เกิน 45 บาท</h3>
+              </div>
+            </div>
+            <div class="route-form">
+              <label>
+                Mode
+                <select id="tapMode">
+                  <option value="rail">Rail</option>
+                  <option value="bus">Bus</option>
+                  <option value="boat">Boat</option>
+                </select>
+              </label>
+              <label>
+                Station
+                <input id="tapStation" value="Saphan Taksin" />
+              </label>
+              <label>
+                Fare
+                <input id="tapFare" type="number" value="32" min="0" max="300" />
+              </label>
+              <button class="button secondary" id="tapTicket" type="button">Tap ticket</button>
+            </div>
+            <div id="tapHistory" class="timeline"></div>
+          </div>
+        </section>
+
+        <section id="report" class="surface report-zone">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Transparent city feedback</p>
+              <h2>แจ้งปัญหาการเดินทาง</h2>
+            </div>
+            <span class="live-pill">Photo + location</span>
+          </div>
+
+          <form id="reportForm" class="form">
+            <label>
+              Category
+              <select name="category" required>
+                <option value="taxi_refusal">Taxi refusal</option>
+                <option value="overpricing">Overpricing</option>
+                <option value="broken_pavement">Broken pavement</option>
+                <option value="unsafe_crossing">Unsafe crossing</option>
+                <option value="unclear_signage">Unclear signage</option>
+                <option value="crowding">Crowding</option>
+                <option value="harassment">Harassment</option>
+                <option value="lost_property">Lost property</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+
+            <label>
+              Description
+              <textarea name="description" rows="5" minlength="5" maxlength="2000" placeholder="Describe the issue, fare, vehicle, station, or nearby landmark." required></textarea>
+            </label>
+
+            <div class="grid-2">
+              <label>
+                Latitude
+                <input name="latitude" type="number" step="any" min="-90" max="90" value="13.7563" required />
+              </label>
+              <label>
+                Longitude
+                <input name="longitude" type="number" step="any" min="-180" max="180" value="100.5018" required />
+              </label>
+            </div>
+
+            <button class="button secondary" type="button" id="useLocation">Use current location</button>
+
+            <label>
+              Photo evidence
+              <input name="image" type="file" accept="image/jpeg,image/png,image/webp" />
+            </label>
+
+            <div class="grid-2">
+              <label>
+                Name
+                <input name="reporter_name" type="text" maxlength="120" placeholder="Optional" />
+              </label>
+              <label>
+                Contact
+                <input name="contact" type="text" maxlength="160" placeholder="Optional" />
+              </label>
+            </div>
+
+            <button class="button primary" type="submit">Submit report</button>
+            <p id="message" class="message" role="status"></p>
+          </form>
+        </section>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <a href="#plan">Route</a>
+      <a href="#ticket">Pass</a>
+      <a href="#report">Report</a>
+      <a href="/admin.html">Ops</a>
+    </nav>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
