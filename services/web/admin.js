@@ -6,6 +6,7 @@ const categoryFilter = document.querySelector("#categoryFilter");
 const refresh = document.querySelector("#refresh");
 const walletTopupForm = document.querySelector("#walletTopupForm");
 const walletAdminMessage = document.querySelector("#walletAdminMessage");
+const cityInsightList = document.querySelector("#cityInsightList");
 
 let cachedReports = [];
 let cachedTickets = [];
@@ -32,11 +33,45 @@ const labels = {
   other: "Other",
 };
 
+const mockCityInsights = [
+  {
+    label: "Top OD pair",
+    value: "Siam → Wat Arun",
+    metric: "38% of demo journeys",
+    action: "Add clearer MRT Sanam Chai + Tha Tien pier guidance.",
+  },
+  {
+    label: "Missed transfer cluster",
+    value: "Saphan Taksin / Sathorn Pier",
+    metric: "14 re-plan events",
+    action: "Show Exit 2, pier photo, and boat direction before arrival.",
+  },
+  {
+    label: "QR failure hotspot",
+    value: "Pier validator queue",
+    metric: "8 scan-failed reports",
+    action: "Deploy staff scanner fallback and offline QR validation.",
+  },
+  {
+    label: "Feeder gap",
+    value: "Tha Tien → Grand Palace",
+    metric: "11 long-walk recoveries",
+    action: "Recommend short EV feeder during hot/rainy time windows.",
+  },
+  {
+    label: "Tourist safety signal",
+    value: "Yaowarat evening crowding",
+    metric: "High after 18:30",
+    action: "Suggest MRT Wat Mangkon exits and less crowded return route.",
+  },
+];
+
 async function loadAll() {
   const [reports, tickets] = await Promise.all([loadReports(), loadTickets()]);
   cachedReports = reports;
   cachedTickets = tickets;
   renderStats(reports, tickets);
+  renderCityInsights(reports, tickets);
   if (selectedReportId) renderDetail(reports.find((report) => report.id === selectedReportId));
 }
 
@@ -84,6 +119,31 @@ function renderStats(reports, tickets) {
   document.querySelector("#highSeverity").textContent = high;
   document.querySelector("#activeTickets").textContent = active;
   document.querySelector("#fareProtected").textContent = `${protectedFare} THB`;
+}
+
+function renderCityInsights(reports, tickets) {
+  const dynamicSignals = [
+    {
+      label: "Live report queue",
+      value: `${reports.filter((report) => ["submitted", "reviewing"].includes(report.status)).length} unresolved cases`,
+      metric: `${reports.filter((report) => report.category === "wrong_vehicle_guidance" || report.category === "missed_transfer").length} route guidance issues`,
+      action: "Use these cases to tune transfer instructions and AI recovery prompts.",
+    },
+    {
+      label: "Fare cap usage",
+      value: `${tickets.reduce((sum, ticket) => sum + ticket.accumulated_fare_thb, 0)} THB validated`,
+      metric: `${tickets.filter((ticket) => ticket.accumulated_fare_thb >= 45).length} cap-protected tickets`,
+      action: "Shows how much duplicate-entry friction the fair-fare layer absorbs.",
+    },
+  ];
+  cityInsightList.innerHTML = [...dynamicSignals, ...mockCityInsights].map((item) => `
+    <article class="intel-card">
+      <span>${escapeHtml(item.label)}</span>
+      <strong>${escapeHtml(item.value)}</strong>
+      <small>${escapeHtml(item.metric)}</small>
+      <p>${escapeHtml(item.action)}</p>
+    </article>
+  `).join("");
 }
 
 function renderReport(report) {

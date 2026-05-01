@@ -9,6 +9,7 @@ const state = {
   activeTicketId: localStorage.getItem("activeTicketId"),
   activeTicket: null,
   activeTrip: null,
+  routeChoice: "fast",
   pendingPayment: null,
   map: null,
   markers: [],
@@ -36,6 +37,13 @@ const copy = {
     saved: "Saved",
     fareBreakdown: "Receipt-style fare breakdown",
     routeDetails: "What to do next",
+    fastest: "Fastest",
+    cheapest: "Cheapest",
+    scenic: "Scenic",
+    boardAt: "Board",
+    validateAt: "Validate",
+    transferAt: "Transfer",
+    exitAt: "Exit",
     exploreAround: "Explore around destination",
     touristContext: "Tourist context",
     wowFactor: "The wow factor",
@@ -119,6 +127,13 @@ const copy = {
     saved: "ประหยัด",
     fareBreakdown: "รายละเอียดค่าโดยสารแบบใบเสร็จ",
     routeDetails: "ต้องทำอะไรต่อ",
+    fastest: "เร็วที่สุด",
+    cheapest: "ถูกที่สุด",
+    scenic: "ชมวิว/สับสนน้อย",
+    boardAt: "ขึ้นที่",
+    validateAt: "สแกนที่",
+    transferAt: "ต่อที่",
+    exitAt: "ออกที่",
     exploreAround: "สำรวจรอบจุดหมาย",
     touristContext: "บริบทสำหรับนักท่องเที่ยว",
     wowFactor: "ฟีเจอร์เด่น",
@@ -331,6 +346,122 @@ const routeModes = {
   },
 };
 
+const destinationRoutes = {
+  "wat-arun": {
+    fast: {
+      modes: ["MRT", "Walk/Ferry"],
+      time: 31,
+      fare: 45,
+      confidence: "highest clarity",
+      thConfidence: "เข้าใจง่ายสุด",
+      legs: [
+        { type: "rail", title: "MRT Blue Line to Sanam Chai", th: "MRT สายสีน้ำเงินไปสนามไชย", detail: "Exit toward Museum Siam / Tha Tien corridor.", detailTh: "ออกทาง Museum Siam / ทางไปท่าเตียน", scan: "MRT entry and exit gates", scanTh: "ประตูเข้า-ออกรถไฟฟ้า MRT", fare: 32 },
+        { type: "walk", title: "Walk to Tha Tien pier", th: "เดินไปท่าเตียน", detail: "Follow river / Wat Pho signs, about 8-10 minutes.", detailTh: "ตามป้ายแม่น้ำ/วัดโพธิ์ ประมาณ 8-10 นาที", scan: "No charge, keep QR active", scanTh: "ไม่คิดเงิน เก็บ QR ไว้", fare: 0 },
+        { type: "boat", title: "Cross-river ferry to Wat Arun", th: "เรือข้ามฟากไปวัดอรุณ", detail: "Board to Wat Arun pier, then walk 3-5 minutes to the entrance.", detailTh: "ลงท่าวัดอรุณแล้วเดิน 3-5 นาทีถึงทางเข้า", scan: "Pier staff scanner", scanTh: "เจ้าหน้าที่ท่าเรือสแกน", fare: 13 },
+      ],
+    },
+    cheap: {
+      modes: ["BMTA/EV Bus", "Walk"],
+      time: 46,
+      fare: 24,
+      confidence: "lowest fare",
+      thConfidence: "ประหยัดสุด",
+      legs: [
+        { type: "bus", title: "Board an old-town feeder bus toward Rattanakosin", th: "ขึ้น feeder bus เข้าเกาะรัตนโกสินทร์", detail: "Use the app pin to verify the exact stop before boarding.", detailTh: "ใช้ pin ในแอพยืนยันป้ายก่อนขึ้นรถ", scan: "Bus validator at boarding", scanTh: "เครื่องสแกนบนรถตอนขึ้น", fare: 16 },
+        { type: "walk", title: "Walk via Tha Tien / riverside corridor", th: "เดินผ่านท่าเตียน/แนวริมแม่น้ำ", detail: "Good for daylight. AI re-plans if traffic changes the stop.", detailTh: "เหมาะช่วงกลางวัน หากรถเปลี่ยนจุดจอด AI จะ re-plan", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+        { type: "boat", title: "Short ferry or pier connector", th: "เรือข้ามฟากระยะสั้น", detail: "Use the same QR if the pier supports validation.", detailTh: "ใช้ QR เดิมหากท่าเรือรองรับการสแกน", scan: "Pier scanner", scanTh: "จุดสแกนท่าเรือ", fare: 8 },
+      ],
+    },
+    scenic: {
+      modes: ["BTS", "Boat"],
+      time: 44,
+      fare: 45,
+      confidence: "best tourist experience",
+      thConfidence: "ประสบการณ์ท่องเที่ยวดีที่สุด",
+      legs: [
+        { type: "rail", title: "BTS Silom Line to Saphan Taksin", th: "BTS สายสีลมไปสะพานตากสิน", detail: "Exit 2 toward Sathorn / Central Pier.", detailTh: "ออกทางออก 2 ไปท่าสาทร/Central Pier", scan: "BTS gate entry and exit", scanTh: "ประตู BTS เข้าและออก", fare: 28 },
+        { type: "walk", title: "Walk 3-5 minutes to Sathorn Pier", th: "เดิน 3-5 นาทีไปท่าสาทร", detail: "Follow pier signage, avoid taxi touts near the walkway.", detailTh: "ตามป้ายท่าเรือ ระวังคนชวนขึ้นรถ/ทัวร์นอกระบบ", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+        { type: "boat", title: "Boat northbound to Wat Arun / Tha Tien area", th: "นั่งเรือขึ้นเหนือไปวัดอรุณ/ท่าเตียน", detail: "Great for first-time visitors and sunset storytelling.", detailTh: "เหมาะกับนักท่องเที่ยวครั้งแรกและวิวช่วงเย็น", scan: "Boat/pier validator", scanTh: "เครื่องสแกนบนเรือหรือท่าเรือ", fare: 21 },
+      ],
+    },
+  },
+  "grand-palace": {
+    fast: {
+      modes: ["MRT", "Walk"],
+      time: 26,
+      fare: 35,
+      confidence: "least traffic risk",
+      thConfidence: "เสี่ยงรถติดน้อยสุด",
+      legs: [
+        { type: "rail", title: "MRT Blue Line to Sanam Chai", th: "MRT สายสีน้ำเงินไปสนามไชย", detail: "Exit toward Museum Siam / Rattanakosin.", detailTh: "ออกทาง Museum Siam / รัตนโกสินทร์", scan: "MRT entry and exit gates", scanTh: "ประตู MRT เข้าและออก", fare: 32 },
+        { type: "walk", title: "Walk to Grand Palace gate", th: "เดินไปประตูพระบรมมหาราชวัง", detail: "Follow signed old-town walking corridor; check dress code before entry.", detailTh: "เดินตามทางเมืองเก่า ตรวจ dress code ก่อนเข้า", scan: "No transit charge", scanTh: "ไม่คิดค่าเดินทาง", fare: 0 },
+      ],
+    },
+    cheap: {
+      modes: ["Bus", "Walk"],
+      time: 38,
+      fare: 18,
+      confidence: "lowest fare",
+      thConfidence: "ถูกสุด",
+      legs: [
+        { type: "bus", title: "Board Rattanakosin feeder bus", th: "ขึ้นรถ feeder เข้ารัตนโกสินทร์", detail: "Confirm route direction in app before boarding.", detailTh: "เช็กทิศทางในแอพก่อนขึ้น", scan: "Bus validator", scanTh: "เครื่องสแกนบนรถ", fare: 18 },
+        { type: "walk", title: "Walk from Tha Chang / Sanam Luang area", th: "เดินจากท่าช้าง/สนามหลวง", detail: "Use shaded side when possible; save meeting point.", detailTh: "เดินฝั่งมีร่มเมื่อทำได้ และบันทึกจุดนัดพบ", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+      ],
+    },
+    scenic: {
+      modes: ["BTS", "Boat", "Walk"],
+      time: 43,
+      fare: 45,
+      confidence: "riverfront route",
+      thConfidence: "เส้นทางริมแม่น้ำ",
+      legs: [
+        { type: "rail", title: "BTS to Saphan Taksin", th: "BTS ไปสะพานตากสิน", detail: "Walk to Sathorn Pier.", detailTh: "เดินต่อไปท่าสาทร", scan: "BTS gates", scanTh: "ประตู BTS", fare: 28 },
+        { type: "boat", title: "Boat to Tha Chang / Maharaj area", th: "เรือไปท่าช้าง/ท่ามหาราช", detail: "Good when roads are congested.", detailTh: "เหมาะเมื่อถนนรถติด", scan: "Pier validator", scanTh: "จุดสแกนท่าเรือ", fare: 21 },
+        { type: "walk", title: "Walk to entrance", th: "เดินไปทางเข้า", detail: "Follow Grand Palace signs and staff guidance.", detailTh: "ตามป้ายและคำแนะนำเจ้าหน้าที่", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+      ],
+    },
+  },
+  yaowarat: {
+    fast: {
+      modes: ["MRT"],
+      time: 18,
+      fare: 32,
+      confidence: "direct rail",
+      thConfidence: "รถไฟฟ้าตรงสุด",
+      legs: [
+        { type: "rail", title: "MRT Blue Line to Wat Mangkon", th: "MRT สายสีน้ำเงินไปวัดมังกร", detail: "Use Exit 1/2 toward Yaowarat Road.", detailTh: "ใช้ทางออก 1/2 ไปถนนเยาวราช", scan: "MRT entry and exit gates", scanTh: "ประตู MRT เข้าและออก", fare: 32 },
+        { type: "walk", title: "Walk food street loop", th: "เดิน loop street food", detail: "Evening is best; sidewalks are crowded.", detailTh: "ช่วงเย็นดีที่สุด ทางเท้าคนแน่น", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+      ],
+    },
+    cheap: {
+      modes: ["Bus"],
+      time: 34,
+      fare: 18,
+      confidence: "budget route",
+      thConfidence: "ประหยัด",
+      legs: [
+        { type: "bus", title: "Board old-town bus toward Chinatown", th: "ขึ้นรถเมล์เข้าเยาวราช", detail: "Best when not in rush hour.", detailTh: "เหมาะนอกเวลาเร่งด่วน", scan: "Bus validator", scanTh: "เครื่องสแกนบนรถ", fare: 18 },
+        { type: "walk", title: "Hop off near Yaowarat Road", th: "ลงใกล้ถนนเยาวราช", detail: "AI can re-plan if you miss the stop.", detailTh: "ถ้าเลยป้าย AI ช่วย re-plan ได้", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+      ],
+    },
+    scenic: {
+      modes: ["Boat", "Walk"],
+      time: 39,
+      fare: 30,
+      confidence: "river + food",
+      thConfidence: "ริมแม่น้ำ + ของกิน",
+      legs: [
+        { type: "boat", title: "Boat to Ratchawong Pier", th: "เรือไปท่าราชวงศ์", detail: "Walk into Chinatown from the pier.", detailTh: "เดินเข้าเยาวราชจากท่าเรือ", scan: "Pier/boat validator", scanTh: "สแกนที่ท่าเรือ/บนเรือ", fare: 21 },
+        { type: "walk", title: "Walk to Yaowarat food street", th: "เดินไปถนนอาหารเยาวราช", detail: "Good for tourists who want a river arrival.", detailTh: "เหมาะกับนักท่องเที่ยวที่อยากได้บรรยากาศริมน้ำ", scan: "No charge", scanTh: "ไม่คิดเงิน", fare: 0 },
+      ],
+    },
+  },
+};
+
+function routeSetFor(dest) {
+  return destinationRoutes[dest.id] || destinationRoutes["wat-arun"];
+}
+
 function t(key) {
   return copy[state.lang][key] || copy.en[key] || key;
 }
@@ -384,6 +515,8 @@ function renderRoute() {
   const mode = routeModes[state.mode];
   const origin = currentOrigin();
   const dest = currentDestination();
+  const detailedRoutes = routeSetFor(dest);
+  const choice = detailedRoutes[state.routeChoice] || detailedRoutes.fast;
   const saved = Math.max(0, mode.fare - mode.total);
   $("#routeTitle").textContent = `${localName(origin)} → ${localName(dest)}`;
   $("#routeNote").textContent = mode.note[state.lang];
@@ -393,6 +526,11 @@ function renderRoute() {
   $("#finalFare").textContent = `${mode.total}฿`;
   $("#ticketOrigin").value = origin.en;
   $("#ticketDestination").value = dest.en;
+  $("#aiContextChip").textContent = state.lang === "th"
+    ? `แชทนี้กำลังตอบเรื่อง ${localName(dest)} · ${state.mode.toUpperCase()}`
+    : `Answering about ${localName(dest)} · ${state.mode.toUpperCase()}`;
+  renderRouteChoices(detailedRoutes);
+  renderRouteLegTimeline(choice);
 
   $("#farePanel").innerHTML = `
     <div class="space-y-3 text-sm font-semibold">
@@ -428,6 +566,56 @@ function renderRoute() {
     button.classList.toggle("text-transit-blue", active);
     button.classList.toggle("text-white/80", !active);
   });
+}
+
+function renderRouteChoices(routes) {
+  const order = [
+    ["fast", t("fastest")],
+    ["cheap", t("cheapest")],
+    ["scenic", t("scenic")],
+  ];
+  $("#routeChoiceCards").innerHTML = order.map(([key, label]) => {
+    const route = routes[key];
+    if (!route) return "";
+    const active = state.routeChoice === key;
+    return `
+      <button data-route-choice="${key}" class="route-choice-card ${active ? "active" : ""}">
+        <span>${label}</span>
+        <strong>${route.time} ${state.lang === "th" ? "นาที" : "min"} · ${route.fare} THB</strong>
+        <small>${escapeHtml(state.lang === "th" ? route.thConfidence : route.confidence)} · ${route.modes.join(" + ")}</small>
+      </button>`;
+  }).join("");
+}
+
+function renderRouteLegTimeline(route) {
+  $("#routeLegTimeline").innerHTML = `
+    <div class="rounded-3xl bg-white p-4 ring-1 ring-slate-100">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">BKK Rail-style leg plan</p>
+          <h3 class="mt-1 text-lg font-black">${route.time} ${state.lang === "th" ? "นาที" : "min"} · ${route.fare} THB · ${route.modes.join(" + ")}</h3>
+        </div>
+        <span class="rounded-full bg-transit-mint px-3 py-1 text-xs font-black text-transit-teal">${route.fare > 45 ? "45 cap" : "inside cap"}</span>
+      </div>
+      <div class="space-y-3">
+        ${route.legs.map((leg, index) => `
+          <div class="route-leg-row">
+            <div class="route-leg-rail"><span>${index + 1}</span></div>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase text-slate-500">${leg.type}</span>
+                <p class="font-black">${escapeHtml(state.lang === "th" ? leg.th : leg.title)}</p>
+              </div>
+              <p class="mt-1 text-sm font-semibold leading-6 text-slate-500">${escapeHtml(state.lang === "th" ? leg.detailTh : leg.detail)}</p>
+              <div class="mt-2 grid gap-2 text-xs font-black text-slate-500 sm:grid-cols-2">
+                <span class="rounded-2xl bg-slate-50 px-3 py-2">${t("validateAt")}: ${escapeHtml(state.lang === "th" ? leg.scanTh : leg.scan)}</span>
+                <span class="rounded-2xl bg-slate-50 px-3 py-2">Fare event: ${leg.fare} THB</span>
+              </div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>`;
 }
 
 function initMap() {
@@ -589,6 +777,12 @@ function wireEvents() {
     $("#farePanel").classList.remove("hidden");
     $("#fareChevron").classList.add("rotate-180");
     $("#routeSteps").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  $("#routeChoiceCards").addEventListener("click", (event) => {
+    const card = event.target.closest("[data-route-choice]");
+    if (!card) return;
+    state.routeChoice = card.dataset.routeChoice;
+    renderRoute();
   });
   $$(".mode-btn").forEach((button) => button.addEventListener("click", () => {
     state.mode = button.dataset.mode;

@@ -46,6 +46,12 @@ DOMAIN_KEYWORDS = {
     "pass",
     "wrong",
     "reroute",
+    "hello",
+    "hi",
+    "hey",
+    "thanks",
+    "thank",
+    "help",
     "จ่าย",
     "บัตร",
     "ค่าโดยสาร",
@@ -71,6 +77,11 @@ DOMAIN_KEYWORDS = {
     "ผิดคัน",
     "ขึ้นผิด",
     "ต่อรถ",
+    "สวัสดี",
+    "หวัดดี",
+    "ขอบคุณ",
+    "ช่วย",
+    "แนะนำ",
 }
 
 DESTINATION_FACTS = {
@@ -93,7 +104,7 @@ def build_context(payload: CopilotAsk) -> str:
     remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
     return f"""
 Product: Sawasdee Transit, a Bangkok tourist mobility assistant.
-Scope: answer only about Bangkok tourist transit, routes, fare cap, QR scanning, destination arrival, safety, incident reporting, and nearby POIs.
+Scope: answer about Bangkok tourist transit, route planning, fare cap, QR scanning, destination arrival, safety, incident reporting, nearby POIs, and how Sawasdee Transit works.
 Allowed tourist topics: opening/closing hints, etiquette, dress code, food nearby, photo tips, how the app works, what to do after arrival, wrong bus/train/boat recovery.
 Do not answer unrelated general knowledge. Politely redirect to route, fare, destination, app workflow, or tourist help.
 Destination: {payload.destination}
@@ -113,7 +124,13 @@ Data sources used by the prototype: curated landmarks, OpenStreetMap POIs, BMA/B
 
 
 def fallback_answer(payload: CopilotAsk) -> CopilotAnswer:
-    if not is_in_domain(payload.question):
+    if is_greeting(payload.question):
+        text = (
+            f"สวัสดีครับ ฉันคือ Sawasdee AI ตอนนี้กำลังช่วยเรื่อง {payload.destination} อยู่ ถามได้เลย เช่น ต้องขึ้นตรงไหน สแกน QR ตรงไหน ค่าโดยสารคิดยังไง ถ้าหลงทางทำอย่างไร หรือถึงแล้วควรออกทางไหน"
+            if payload.language == "th"
+            else f"Hi, I am Sawasdee AI. I am currently helping with {payload.destination}. Ask me where to board, where to scan QR, how the fare is calculated, what to do if you get lost, or which exit/pier to use."
+        )
+    elif not is_in_domain(payload.question):
         text = (
             "ขอโทษครับ ฉันตอบเฉพาะเรื่องการเดินทางท่องเที่ยวในกรุงเทพฯ ค่าโดยสาร บัตร QR จุดต่อรถ และความปลอดภัยระหว่างทางเท่านั้น"
             if payload.language == "th"
@@ -125,6 +142,12 @@ def fallback_answer(payload: CopilotAsk) -> CopilotAnswer:
         text = english_fallback(payload)
 
     return CopilotAnswer(answer=text, used_model="fallback", fallback=True, suggestions=suggestions(payload.language))
+
+
+def is_greeting(question: str) -> bool:
+    lowered = question.lower().strip()
+    greetings = {"hi", "hello", "hey", "สวัสดี", "หวัดดี", "ดีครับ", "ดีค่ะ"}
+    return lowered in greetings or any(lowered.startswith(item + " ") for item in greetings)
 
 
 def suggestions(language: str) -> list[str]:
@@ -212,17 +235,19 @@ async def ask_copilot(payload: CopilotAsk) -> CopilotAnswer:
 Instruction:
 - {language_rule}
 - Answer the user's actual intent. Be flexible: if they ask opening hours, answer opening-hours guidance; if etiquette, answer etiquette; if QR, answer QR workflow; if app logic, explain the app.
-- Thai answers should usually be 220-520 Thai characters. English answers should usually be 70-140 words.
+- Thai answers should usually be 300-850 Thai characters unless the user only greets you. English answers should usually be 90-190 words.
 - Use compact bullets only when helpful. Do not force every answer into the same template.
 - Include route/fare/QR context only when relevant to the question.
 - Be practical and complete. Finish every sentence.
+- If the user greets you, greet back and name the current destination context.
+- If the user asks broadly, explain like a helpful travel companion, not a rule engine.
 - No markdown table.
 - If asked outside scope, politely refuse and redirect.
 Question: {payload.question}
 """
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.3, "maxOutputTokens": 520},
+        "generationConfig": {"temperature": 0.45, "maxOutputTokens": 900},
     }
 
     try:
@@ -254,5 +279,5 @@ def extract_text(payload: dict) -> str:
 
 def is_too_short(text: str, language: str) -> bool:
     if language == "th":
-        return len(text) < 160
-    return len(text.split()) < 45
+        return len(text) < 80
+    return len(text.split()) < 24

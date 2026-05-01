@@ -1145,6 +1145,191 @@ textarea:focus {
   margin: 0;
 }
 
+.city-intel {
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+
+.intel-badge {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 950;
+  background: var(--mint);
+}
+
+.intel-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.25fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.intel-map,
+.intel-card {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: #ffffff;
+}
+
+.intel-map {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  background:
+    linear-gradient(140deg, rgba(8, 32, 51, 0.94), rgba(6, 113, 151, 0.82)),
+    url("/assets/generated/bangkok-map-preview.jpg") center/cover;
+  color: #ffffff;
+}
+
+.intel-map h3 {
+  margin: 8px 0;
+  font-size: 1.45rem;
+}
+
+.intel-map p {
+  max-width: 34rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-weight: 750;
+  line-height: 1.7;
+}
+
+.heatmap-mock {
+  position: relative;
+  min-height: 220px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 26px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.heatmap-mock span {
+  position: absolute;
+  width: calc(58px * var(--s));
+  height: calc(58px * var(--s));
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 205, 93, 0.95), rgba(5, 134, 111, 0.55) 48%, rgba(10, 124, 194, 0));
+  transform: translate(-50%, -50%);
+}
+
+.intel-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.intel-card {
+  padding: 16px;
+}
+
+.intel-card span {
+  color: var(--teal);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.intel-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.05rem;
+}
+
+.intel-card small {
+  display: block;
+  margin-top: 6px;
+  color: var(--blue);
+  font-weight: 950;
+}
+
+.intel-card p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.route-choice-card {
+  display: grid;
+  gap: 6px;
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: left;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.route-choice-card.active {
+  color: #082033;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.route-choice-card span,
+.route-choice-card strong,
+.route-choice-card small {
+  display: block;
+}
+
+.route-choice-card span {
+  font-size: 0.75rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.route-choice-card strong {
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.route-choice-card small {
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.route-leg-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.route-leg-rail {
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+
+.route-leg-rail::after {
+  content: "";
+  width: 4px;
+  min-height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(#05866f, #0a7cc2);
+}
+
+.route-leg-rail span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  font-weight: 950;
+  background: #082033;
+  box-shadow: 0 10px 24px rgba(8, 32, 51, 0.2);
+}
+
 .ops-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.7fr);
@@ -1597,6 +1782,8 @@ textarea:focus {
   .dense-route,
   .leg-row,
   .wallet-topup,
+  .intel-grid,
+  .intel-list,
   .timeline-item,
   .report-card,
   .ops-ticket {

@@ -41,6 +41,10 @@ Working:
 - Copilot domain now includes opening-hour hints, etiquette, app workflow, wrong-vehicle recovery, QR validation, and destination safety
 - Passenger-side and operator-side payment confirmation simulation
 - Journey control cards for scan, transfer, and lost-passenger recovery
+- BKK Rail-style route option cards for fastest, cheapest, and scenic/low-confusion journeys
+- Detailed leg timeline showing board/validate/transfer/exit logic for tourist landmarks
+- City intelligence admin dashboard with OD demand, missed-transfer, QR failure, feeder-gap, and safety signals
+- Copilot context chip and more flexible destination-aware Gemini responses
 
 Reserved for next sprint:
 

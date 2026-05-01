@@ -242,6 +242,7 @@
                   <button data-mode="bus" class="mode-btn rounded-xl px-3 py-3 text-sm font-black text-white/80">Bus</button>
                   <button data-mode="boat" class="mode-btn rounded-xl px-3 py-3 text-sm font-black text-white/80">Boat</button>
                 </div>
+                <div id="routeChoiceCards" class="mt-4 grid gap-3 lg:grid-cols-3"></div>
               </div>
 
               <div class="p-5 lg:p-7">
@@ -262,6 +263,7 @@
                     <p class="font-black" data-i18n="routeDetails">Route details</p>
                     <span id="routeDisclaimer" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">operator-ready simulation</span>
                   </div>
+                  <div id="routeLegTimeline" class="mb-4 space-y-3"></div>
                   <div id="routeSteps" class="space-y-3"></div>
                 </div>
                 <div class="mt-5 rounded-3xl bg-white p-4 ring-1 ring-slate-100">
@@ -457,7 +459,7 @@
 
     <aside id="aiSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
       <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
-      <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Sawasdee AI Copilot</p><h3 class="mt-1 text-2xl font-black">Need a local tip?</h3></div><button id="closeSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button></div>
+      <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Sawasdee AI Copilot</p><h3 class="mt-1 text-2xl font-black">Need a local tip?</h3><p id="aiContextChip" class="mt-2 inline-flex rounded-full bg-transit-mint px-3 py-1 text-xs font-black text-transit-teal">Answering about Wat Arun</p></div><button id="closeSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button></div>
       <div id="chatLog" class="mt-5 max-h-72 space-y-3 overflow-y-auto"><div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">Need a local tip? Ask Sawasdee AI about routes, etiquette, food spots, or fare safety.</div></div>
       <form id="chatForm" class="mt-4 flex gap-2"><input id="chatInput" class="min-h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none" placeholder="Ask Sawasdee AI..." /><button class="rounded-2xl bg-transit-ink px-5 font-black text-white">Send</button></form>
     </aside>
