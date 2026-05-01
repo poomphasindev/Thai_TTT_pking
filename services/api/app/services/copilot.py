@@ -33,6 +33,19 @@ DOMAIN_KEYWORDS = {
     "safety",
     "lost",
     "payment",
+    "open",
+    "close",
+    "hour",
+    "hours",
+    "etiquette",
+    "dress",
+    "photo",
+    "food",
+    "tip",
+    "app",
+    "pass",
+    "wrong",
+    "reroute",
     "จ่าย",
     "บัตร",
     "ค่าโดยสาร",
@@ -45,15 +58,28 @@ DOMAIN_KEYWORDS = {
     "เที่ยว",
     "วัด",
     "ทาง",
+    "ปิด",
+    "เปิด",
+    "กี่โมง",
+    "เวลา",
+    "มารยาท",
+    "แต่งตัว",
+    "ถ่ายรูป",
+    "กิน",
+    "ร้าน",
+    "แอพ",
+    "ผิดคัน",
+    "ขึ้นผิด",
+    "ต่อรถ",
 }
 
 DESTINATION_FACTS = {
-    "Wat Arun": "Riverside temple. Use Tha Tien/Sanam Chai access, dress modestly, best late afternoon.",
-    "Grand Palace": "Major royal landmark. Use Sanam Chai/Tha Chang area, strict dress code, daytime visit.",
-    "Wat Mangkon / Yaowarat": "Chinatown food district. Use MRT Wat Mangkon, best evening, crowded footpaths.",
-    "ICONSIAM": "Riverfront mall. Use Gold Line/Charoen Nakhon or river pier, strong indoor fallback in rain.",
-    "Siam": "Central interchange and shopping area. Use BTS Siam, walkable malls and arts district.",
-    "Chatuchak Weekend Market": "Large weekend market. Use BTS Mo Chit or MRT Chatuchak Park/Kamphaeng Phet.",
+    "Wat Arun": "Riverside temple. Use Tha Tien/Sanam Chai access, dress modestly, best late afternoon. Prototype opening hint: usually daytime, verify official hours before final visit.",
+    "Grand Palace": "Major royal landmark. Use Sanam Chai/Tha Chang area, strict dress code, daytime visit. Prototype opening hint: daytime only, verify official hours.",
+    "Wat Mangkon / Yaowarat": "Chinatown food district. Use MRT Wat Mangkon, best evening, crowded footpaths. Food area is strongest after late afternoon.",
+    "ICONSIAM": "Riverfront mall. Use Gold Line/Charoen Nakhon or river pier, strong indoor fallback in rain. Mall hours are usually later than temples; verify live hours.",
+    "Siam": "Central interchange and shopping area. Use BTS Siam, walkable malls and arts district. Good all-weather interchange.",
+    "Chatuchak Weekend Market": "Large weekend market. Use BTS Mo Chit or MRT Chatuchak Park/Kamphaeng Phet. Best on weekends; verify market day and hours.",
 }
 
 
@@ -68,7 +94,8 @@ def build_context(payload: CopilotAsk) -> str:
     return f"""
 Product: Sawasdee Transit, a Bangkok tourist mobility assistant.
 Scope: answer only about Bangkok tourist transit, routes, fare cap, QR scanning, destination arrival, safety, incident reporting, and nearby POIs.
-Do not answer unrelated general knowledge. Politely redirect to route, fare, or destination help.
+Allowed tourist topics: opening/closing hints, etiquette, dress code, food nearby, photo tips, how the app works, what to do after arrival, wrong bus/train/boat recovery.
+Do not answer unrelated general knowledge. Politely redirect to route, fare, destination, app workflow, or tourist help.
 Destination: {payload.destination}
 Destination facts: {fact}
 Selected mode: {payload.mode}
@@ -76,10 +103,11 @@ Fare state: billed {payload.fare_billed_thb}/{payload.fare_cap_thb} THB, remaini
 Journey model:
 1. Choose destination landmark.
 2. Walk to the recommended station, pier, or feeder stop.
-3. Scan QR to start one fare session.
-4. Transfer by scanning the same QR. The backend records mode, stop, time, and charged fare.
-5. If lost, ask for re-plan from current location and keep the same fare session.
-6. At arrival, the app explains exit, walking direction, local etiquette, and next payment impact.
+3. Scan QR at the vehicle/gate/pier validator to start one fare session.
+4. For rail, scan/tap at entry and exit; charge is finalized at exit. For bus/boat, scan when boarding; the operator validator records route, stop, and time.
+5. Transfer by scanning the same QR. The backend links each scan into the same fare session and caps total charge.
+6. If the passenger boards the wrong vehicle, misses a stop, or detours, the app should not create a new pass. It should re-plan from current location and show the remaining cap.
+7. At arrival, the app explains exit, walking direction, local etiquette, opening-hour hints, safety, and next payment impact.
 Data sources used by the prototype: curated landmarks, OpenStreetMap POIs, BMA/BMTA/Transit Bangkok as planned route-source integrations.
 """
 
@@ -92,25 +120,9 @@ def fallback_answer(payload: CopilotAsk) -> CopilotAnswer:
             else "Sorry, I can only help with Bangkok tourist transit, fares, QR ticketing, transfers, safety, and destination guidance."
         )
     elif payload.language == "th":
-        remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
-        text = (
-            f"สำหรับ {payload.destination}:\n"
-            f"1. เมื่อถึงพื้นที่ปลายทาง ให้ดูป้ายทางออกหรือท่าเรือที่ใกล้ที่สุดก่อน แล้วเทียบกับจุดบนแผนที่ในแอพ\n"
-            f"2. สแกน QR ตอนขึ้นระบบแรก และสแกน QR เดิมทุกครั้งที่ต่อรถ รถไฟฟ้า หรือเรือ เพื่อให้ระบบรู้ว่าเป็น trip session เดียว\n"
-            f"3. ตอนนี้คุณจ่ายแล้ว {payload.fare_billed_thb}/{payload.fare_cap_thb} บาท ระบบจะคิดเพิ่มได้อีกสูงสุด {remaining} บาทก่อนถึงเพดาน\n"
-            "4. ถ้าหลงทางหรือแวะกลางทาง ให้ไม่ต้องออกบัตรใหม่ ให้ถาม AI เพื่อ re-plan จากตำแหน่งปัจจุบันและใช้บัตรเดิมต่อ\n"
-            "5. ก่อนเข้าพื้นที่ท่องเที่ยว ให้เช็กมารยาทท้องถิ่น เวลาเปิด-ปิด และจุดปลอดภัย เช่น ทางออกหลักหรือจุดพบเจ้าหน้าที่"
-        )
+        text = thai_fallback(payload)
     else:
-        remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
-        text = (
-            f"For {payload.destination}:\n"
-            "1. When you arrive near the destination area, first check the recommended exit, pier, or stop and match it with the map pin in the app.\n"
-            "2. Scan the QR when entering the first mode, then use the same QR for every transfer so the backend keeps one connected fare session.\n"
-            f"3. You have been billed {payload.fare_billed_thb}/{payload.fare_cap_thb} THB today, so the next scans can charge at most {remaining} THB before the cap.\n"
-            "4. If you get lost or make a stop midway, do not issue a new pass. Ask AI to re-plan from your current location and keep using the same ticket.\n"
-            "5. Before entering the attraction, check local etiquette, opening hints, and safe meeting points such as the main exit or staffed area."
-        )
+        text = english_fallback(payload)
 
     return CopilotAnswer(answer=text, used_model="fallback", fallback=True, suggestions=suggestions(payload.language))
 
@@ -120,13 +132,72 @@ def suggestions(language: str) -> list[str]:
         return [
             "ฉันต้องสแกน QR ตรงไหน?",
             "ถ้าหลงทางระหว่างต่อรถทำยังไง?",
-            "ถึงจุดหมายแล้วต้องออกทางไหน?",
+            "ที่นี่ปิดกี่โมงและควรแต่งตัวยังไง?",
         ]
     return [
         "Where do I scan the QR?",
         "What if I get lost during transfer?",
-        "What should I do after arrival?",
+        "What are the opening hours and etiquette?",
     ]
+
+
+def thai_fallback(payload: CopilotAsk) -> str:
+    q = payload.question.lower()
+    remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
+    if any(word in q for word in ["ปิด", "เปิด", "กี่โมง", "เวลา"]):
+        return (
+            f"สำหรับ {payload.destination}: ตอนนี้ prototype ใช้ข้อมูลเวลาแบบคำแนะนำ ไม่ใช่ live official feed จึงควรให้ผู้ใช้กดตรวจสอบแหล่งทางการก่อนออกเดินทางจริง "
+            "ถ้าเป็นวัดหรือสถานที่ราชการ ให้ถือว่าเหมาะกับช่วงกลางวันและควรไปก่อนเย็น หากเป็นย่านอาหาร/ห้างมักเหมาะช่วงบ่ายถึงค่ำ "
+            "ระบบควรแสดงเวลาแบบ “แนะนำ + ต้องยืนยันอีกครั้ง” และให้ AI ช่วยบอกทางไปทางออก/ท่าเรือ/ป้ายรถที่ใกล้สุดเมื่อถึงพื้นที่"
+        )
+    if any(word in q for word in ["มารยาท", "แต่งตัว", "dress", "etiquette"]):
+        return (
+            f"มารยาทสำหรับ {payload.destination}: แต่งกายสุภาพ โดยเฉพาะวัดและพื้นที่ราชการ ควรคลุมไหล่และเข่า พูดเบา ไม่ปีนหรือแตะต้องพื้นที่ศักดิ์สิทธิ์ "
+            "ถ่ายรูปได้เฉพาะจุดที่อนุญาต และถ้ามีเจ้าหน้าที่ให้ยื่น QR/บัตรในแอพเมื่อจำเป็น "
+            "แอพควรช่วยด้วยการเตือน dress code ก่อนถึงปลายทาง พร้อมบอกจุดทางเข้า ทางออก และพื้นที่ปลอดภัยสำหรับนัดพบ"
+        )
+    if any(word in q for word in ["สแกน", "qr", "บัตร"]):
+        return (
+            f"ให้สแกน QR ตอนเริ่มใช้ระบบแรก เช่น ประตูรถไฟฟ้า เครื่องสแกนบนรถเมล์ หรือจุดตรวจที่ท่าเรือ จากนั้นใช้ QR เดิมทุกครั้งที่ต่อรถหรือเรือ "
+            f"ระบบหลังบ้านจะรู้ว่าเป็น fare session เดียว จึงคิดเงินตามการใช้งานจริงแต่ไม่เกิน {payload.fare_cap_thb} บาท ตอนนี้จ่ายแล้ว {payload.fare_billed_thb} บาท เหลือเพดานอีก {remaining} บาท "
+            "ถ้าขึ้นผิดคัน ให้ไม่ต้องออกบัตรใหม่ ให้กดให้ AI re-plan จากตำแหน่งปัจจุบัน แล้ว scan ต่อเมื่อขึ้นคัน/เรือ/สถานีถัดไป"
+        )
+    if any(word in q for word in ["หลง", "ผิดคัน", "ขึ้นผิด", "แวะ"]):
+        return (
+            "ถ้าหลงทางหรือขึ้นผิดคัน ระบบไม่ควรลงโทษด้วยการบังคับซื้อบัตรใหม่ ให้ใช้บัตรเดิมต่อเพราะ QR ผูกกับ user และ fare session เดียว "
+            "ขั้นตอนคือกด “ฉันหลงทาง” ให้ AI อ่านจุดหมาย ปัจจุบัน mode และยอดจ่าย แล้วแนะนำจุดกลับเข้าสายที่ถูกต้อง เช่น ป้ายรถ ท่าเรือ หรือสถานีใกล้ที่สุด "
+            f"ถ้ามีการ scan เพิ่ม ระบบคิดเงินเฉพาะส่วนที่เหลือก่อนถึงเพดาน {payload.fare_cap_thb} บาท"
+        )
+    return (
+        f"สำหรับ {payload.destination}: เริ่มจากเลือกแลนด์มาร์ก แล้วเดินไปสถานี/ท่าเรือ/ป้ายที่แอพแนะนำ สแกน QR เพื่อเปิด fare session เดียว "
+        "ทุกครั้งที่ต่อรถ รถไฟฟ้า หรือเรือ ให้ใช้ QR เดิมเพื่อให้ backend ตรวจว่าเป็นการเดินทางต่อเนื่อง "
+        f"ตอนนี้จ่ายแล้ว {payload.fare_billed_thb}/{payload.fare_cap_thb} บาท จึงจ่ายเพิ่มได้ไม่เกิน {remaining} บาท หากแวะหรือหลงทางให้ re-plan จากตำแหน่งปัจจุบันโดยไม่ต้องออกบัตรใหม่"
+    )
+
+
+def english_fallback(payload: CopilotAsk) -> str:
+    q = payload.question.lower()
+    remaining = max(0, payload.fare_cap_thb - payload.fare_billed_thb)
+    if any(word in q for word in ["open", "close", "hour"]):
+        return (
+            f"For {payload.destination}: the prototype should show opening hours as guidance, not a live official guarantee. "
+            "For temples and civic landmarks, recommend daytime arrival and verify official hours before the final visit. "
+            "For food districts and malls, afternoon to evening is usually safer for the pitch flow. The app should pair this with the nearest exit, pier, or stop."
+        )
+    if any(word in q for word in ["etiquette", "dress", "photo"]):
+        return (
+            f"Etiquette for {payload.destination}: dress modestly for temples and civic sites, keep shoulders/knees covered where required, speak quietly, and avoid restricted photo areas. "
+            "The app should warn the tourist before arrival, then show the correct gate, safe meeting point, and staffed area. If staff asks for validation, show the live QR."
+        )
+    if any(word in q for word in ["scan", "qr", "pass", "ticket"]):
+        return (
+            f"Scan the QR at the first validator: rail gate, bus validator, boat pier, or staff scanner. Use the same QR at every transfer so the backend keeps one fare session. "
+            f"You have paid {payload.fare_billed_thb}/{payload.fare_cap_thb} THB, so remaining charge before the cap is {remaining} THB. If you board the wrong vehicle, re-plan and keep the same pass."
+        )
+    return (
+        f"For {payload.destination}: choose the landmark first, follow the recommended station, pier, or feeder stop, and scan the QR to start one connected fare session. "
+        f"Each transfer uses the same QR; the backend records mode, route, stop, and fare while keeping total charge within {payload.fare_cap_thb} THB. If lost, re-plan from current location."
+    )
 
 
 async def ask_copilot(payload: CopilotAsk) -> CopilotAnswer:
@@ -140,8 +211,10 @@ async def ask_copilot(payload: CopilotAsk) -> CopilotAnswer:
 {build_context(payload)}
 Instruction:
 - {language_rule}
-- Do not be too short. Thai answers must be at least 450 Thai characters. English answers must be at least 120 words.
-- Use exactly 5 compact bullets with these meanings: arrival point, where to scan QR, payment/cap impact, transfer or lost recovery, local tip.
+- Answer the user's actual intent. Be flexible: if they ask opening hours, answer opening-hours guidance; if etiquette, answer etiquette; if QR, answer QR workflow; if app logic, explain the app.
+- Thai answers should usually be 220-520 Thai characters. English answers should usually be 70-140 words.
+- Use compact bullets only when helpful. Do not force every answer into the same template.
+- Include route/fare/QR context only when relevant to the question.
 - Be practical and complete. Finish every sentence.
 - No markdown table.
 - If asked outside scope, politely refuse and redirect.
@@ -181,5 +254,5 @@ def extract_text(payload: dict) -> str:
 
 def is_too_short(text: str, language: str) -> bool:
     if language == "th":
-        return len(text) < 360
-    return len(text.split()) < 90
+        return len(text) < 160
+    return len(text.split()) < 45

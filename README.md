@@ -34,6 +34,7 @@ Working:
 - AI Trip Intelligence section showing where RAG fits in the user journey
 - Gemini-backed `/api/copilot/ask` endpoint with domain guard and low-token answers
 - Structured copilot fallback prevents truncated or overly short Gemini replies
+- Copilot domain now includes opening-hour hints, etiquette, app workflow, wrong-vehicle recovery, QR validation, and destination safety
 - Passenger-side and operator-side payment confirmation simulation
 - Journey control cards for scan, transfer, and lost-passenger recovery
 
@@ -278,6 +279,14 @@ In product terms:
 - Map cards show nearby verified POIs with numbered pins instead of pretending to have paid Google ratings.
 - AI Trip Intelligence uses destination facts, live POIs, reports, and fare state to answer what tourists should do after arrival.
 - After each simulated payment, the QR view resets to the front of the card and refreshes the live-ticket timer for the next scan.
+
+## QR And Fare Responsibilities
+
+- Passenger: chooses a destination and follows the next station, pier, stop, or feeder vehicle shown by the app.
+- Operator: validates each boarding, gate entry, pier entry, or staff check with the QR scanner.
+- Backend: links all scans into one fare session, records operator/mode/stop/time, and applies the 45 THB cap before payment.
+- Copilot: helps recover when the tourist boards the wrong vehicle, stops midway, or needs local arrival guidance.
+- QR token: represents the active user/pass/session. It can rotate for safety, but backend resolves it to the same active trip until the user pays or starts a new session.
 
 Recommended production path:
 
