@@ -6,6 +6,15 @@ from pydantic import BaseModel, Field
 
 
 class ReportCategory(StrEnum):
+    qr_scan_failed = "qr_scan_failed"
+    wrong_vehicle_guidance = "wrong_vehicle_guidance"
+    missed_transfer = "missed_transfer"
+    service_delay = "service_delay"
+    vehicle_crowding = "vehicle_crowding"
+    fare_charge_dispute = "fare_charge_dispute"
+    staff_validation_issue = "staff_validation_issue"
+    app_route_mismatch = "app_route_mismatch"
+    accessibility_issue = "accessibility_issue"
     taxi_refusal = "taxi_refusal"
     overpricing = "overpricing"
     broken_pavement = "broken_pavement"

@@ -10,6 +10,15 @@ let cachedTickets = [];
 let selectedReportId = null;
 
 const labels = {
+  qr_scan_failed: "QR scan failed",
+  wrong_vehicle_guidance: "Wrong vehicle guidance",
+  missed_transfer: "Missed transfer",
+  service_delay: "Service delay",
+  vehicle_crowding: "Crowding / unsafe boarding",
+  fare_charge_dispute: "Fare charge dispute",
+  staff_validation_issue: "Staff validation issue",
+  app_route_mismatch: "App route mismatch",
+  accessibility_issue: "Accessibility issue",
   taxi_refusal: "Taxi refusal",
   overpricing: "Overpricing",
   broken_pavement: "Broken pavement",

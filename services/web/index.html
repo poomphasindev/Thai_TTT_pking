@@ -210,6 +210,15 @@
                   <p class="mt-2 text-sm font-semibold leading-6 text-amber-800" data-i18n="workflowStep4Body">Each scan records the operator and charge, then the backend caps the session before payment.</p>
                 </article>
               </div>
+              <div class="mt-5 rounded-3xl bg-slate-950 p-5 text-white">
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-gold" data-i18n="fairUseEyebrow">Fair-use control</p>
+                <h3 class="mt-2 text-xl font-black" data-i18n="fairUseTitle">The cap is for a planned journey, not unlimited random riding.</h3>
+                <div class="mt-4 grid gap-3 lg:grid-cols-3">
+                  <p class="rounded-2xl bg-white/10 p-4 text-sm font-semibold leading-6" data-i18n="fairUse1">Route intent locks the destination and expected mode sequence before the first scan.</p>
+                  <p class="rounded-2xl bg-white/10 p-4 text-sm font-semibold leading-6" data-i18n="fairUse2">Transfers have a time/distance window. Detours trigger AI re-plan and operator review flags.</p>
+                  <p class="rounded-2xl bg-white/10 p-4 text-sm font-semibold leading-6" data-i18n="fairUse3">Operators are paid per validated leg, while passengers see one capped fare session.</p>
+                </div>
+              </div>
             </section>
           </div>
 
@@ -379,7 +388,7 @@
           <div class="rounded-[2rem] bg-gradient-to-br from-transit-ink to-transit-navy p-5 text-white shadow-card lg:p-7">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-gold">Safety and support</p>
             <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="reportTitle">Report a transit issue</h2>
-            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-white/72" data-i18n="reportBody">Manual-first reporting with category, place, time, vehicle ID, and photo evidence. Vision AI can be added later without changing this flow.</p>
+            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-white/72" data-i18n="reportBody">Report service issues tied to your bus, skytrain, boat, QR scan, fare charge, or route guidance.</p>
             <div class="mt-5 grid gap-3 lg:grid-cols-3">
               <button id="openReportBtn" class="rounded-3xl bg-white px-5 py-5 text-left text-transit-ink shadow-soft">
                 <span class="text-3xl">📝</span>
@@ -452,19 +461,19 @@
     <aside id="reportSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92vh] max-w-3xl overflow-y-auto rounded-t-[2rem] bg-white p-5 shadow-2xl lg:rounded-[2rem]">
       <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
       <div class="mb-5 flex items-start justify-between gap-4">
-        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Manual-first incident report</p><h2 class="mt-1 text-3xl font-black tracking-tight">Report details</h2><p class="mt-2 text-sm font-semibold leading-6 text-slate-500">Use current route context, add exact vehicle/time evidence, and attach a photo if available.</p></div>
+        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Transit service report</p><h2 class="mt-1 text-3xl font-black tracking-tight">Trip issue details</h2><p class="mt-2 text-sm font-semibold leading-6 text-slate-500">Use current route context, add exact operator, line, vehicle, gate, pier, time, and payment evidence.</p></div>
         <button id="closeReportSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button>
       </div>
       <form id="reportForm" class="grid gap-4 lg:grid-cols-2">
-        <label><span class="mb-2 block text-sm font-black">Category</span><select name="category" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi_refusal">Taxi refusal</option><option value="overpricing">Overpricing</option><option value="broken_pavement">Broken pavement</option><option value="unclear_signage">Unclear signage</option><option value="unsafe_crossing">Unsafe crossing</option><option value="other">Other</option></select></label>
-        <label><span class="mb-2 block text-sm font-black">Transport mode</span><select name="transport_mode" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi">Taxi</option><option value="rail">Rail</option><option value="bus">Bus</option><option value="boat">Boat</option><option value="walk">Walking infrastructure</option></select></label>
-        <label><span class="mb-2 block text-sm font-black">Plate / vehicle / train ID</span><input name="vehicle_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="1กข 1234, BTS car no., bus route" /></label>
+        <label><span class="mb-2 block text-sm font-black">Issue type</span><select name="category" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="qr_scan_failed">QR scan failed</option><option value="wrong_vehicle_guidance">Wrong bus/train/boat guidance</option><option value="missed_transfer">Missed transfer / stop unclear</option><option value="service_delay">Vehicle delayed or skipped stop</option><option value="vehicle_crowding">Crowding / unsafe boarding</option><option value="fare_charge_dispute">Fare charge looks wrong</option><option value="staff_validation_issue">Staff could not validate pass</option><option value="app_route_mismatch">App route did not match real service</option><option value="accessibility_issue">Accessibility issue</option><option value="other">Other transit issue</option></select></label>
+        <label><span class="mb-2 block text-sm font-black">Transit mode</span><select name="transport_mode" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="bus">Bus / feeder</option><option value="rail">Skytrain / MRT</option><option value="boat">Boat / pier</option><option value="app">App / QR / payment</option></select></label>
+        <label><span class="mb-2 block text-sm font-black">Line / vehicle / gate / pier ID</span><input name="vehicle_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Bus route 3-53, BTS CEN gate 2, Pier N8, QR scanner ID" /></label>
         <label><span class="mb-2 block text-sm font-black">Incident time</span><div class="flex gap-2"><input id="incidentTime" name="incident_time" type="datetime-local" class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /><button id="useNow" type="button" class="rounded-2xl bg-transit-mint px-4 font-black text-transit-teal">Now</button></div></label>
-        <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Location label</span><input name="location_label" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Wat Mangkon Exit 1, Yaowarat Road" /></label>
+        <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Where it happened</span><input name="location_label" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="BTS Siam gate, Tha Tien pier, bus stop near Wat Arun, route leg 2" /></label>
         <input name="latitude" type="hidden" value="13.7563" /><input name="longitude" type="hidden" value="100.5018" />
         <label><span class="mb-2 block text-sm font-black">Severity</span><select name="severity" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
         <label><span class="mb-2 block text-sm font-black">Optional photo evidence</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /></label>
-        <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Description</span><textarea name="description" minlength="5" maxlength="2000" class="min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-semibold outline-none" placeholder="Add clear context: location, fare requested, vehicle number, staff behavior, signage issue..." required></textarea></label>
+        <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">What went wrong?</span><textarea name="description" minlength="5" maxlength="2000" class="min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-semibold outline-none" placeholder="Example: QR scanner failed on bus route 3-53, app told me to board this stop but the driver skipped it, fare charged 21 THB after cap should be 0 THB..." required></textarea></label>
         <label><span class="mb-2 block text-sm font-black">Name</span><input name="reporter_name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
         <label><span class="mb-2 block text-sm font-black">Contact</span><input name="contact" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
         <button class="rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 font-black text-white shadow-card lg:col-span-2">Submit Smart Report</button>

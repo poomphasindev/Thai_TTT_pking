@@ -288,6 +288,23 @@ In product terms:
 - Copilot: helps recover when the tourist boards the wrong vehicle, stops midway, or needs local arrival guidance.
 - QR token: represents the active user/pass/session. It can rotate for safety, but backend resolves it to the same active trip until the user pays or starts a new session.
 
+## Fair-Use And Abuse Control
+
+The cap is not an unlimited ride-anywhere pass. It is a capped connected journey with a declared destination.
+
+- Route intent: before the first scan, the user selects origin, destination, and suggested mode sequence.
+- Transfer window: each transfer should happen within a reasonable time and distance corridor from the planned journey.
+- Mode validation: bus, rail, and boat operators validate each leg; the backend records operator, route, stop, timestamp, and charge.
+- Detour recovery: if the passenger boards the wrong bus/boat/train or stops midway, the app offers AI re-plan using the same pass instead of forcing a new ticket.
+- Anomaly flags: repeated loops, impossible transfers, excessive backtracking, or scans far outside the route corridor can be flagged for review or require user confirmation.
+- Settlement logic: passengers see one capped fare session, while operators are compensated per validated leg according to the clearing rules.
+
+Suggested hackathon wording:
+
+```txt
+We are not selling unlimited travel for 45 THB. We are simulating a fair-fare session for one destination-led journey. The cap protects normal transfers and mistakes, while route intent and scan telemetry prevent unlimited random riding.
+```
+
 Recommended production path:
 
 - Tourism POIs: TAT Data API
