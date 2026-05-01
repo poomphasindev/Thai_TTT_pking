@@ -1,360 +1,295 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sawasdee Transit</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://unpkg.com/maplibre-gl@^5.12.0/dist/maplibre-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/maplibre-gl@^5.12.0/dist/maplibre-gl.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "Prompt", "system-ui", "sans-serif"] },
+            colors: {
+              transit: {
+                ink: "#0F1F2E",
+                blue: "#0A5EA8",
+                navy: "#082D4F",
+                teal: "#05866F",
+                mint: "#DDF7EE",
+                gold: "#F7C948",
+                coral: "#F26B5B",
+              },
+            },
+            boxShadow: {
+              soft: "0 20px 60px rgba(15,31,46,.14)",
+              card: "0 18px 40px rgba(8,45,79,.16)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+      body {
+        background:
+          radial-gradient(circle at 20% 0%, rgba(247,201,72,.22), transparent 28rem),
+          radial-gradient(circle at 100% 12%, rgba(5,134,111,.16), transparent 30rem),
+          #f5f8fb;
+      }
+      .glass { background: rgba(255,255,255,.84); backdrop-filter: blur(22px); }
+      .hero-image { background-image: linear-gradient(180deg, rgba(5,28,48,.08), rgba(5,28,48,.72)), url("/assets/landmarks/wat-arun.jpg"); }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .ticket-perspective { perspective: 1400px; }
+      .ticket-inner { transform-style: preserve-3d; transition: transform 760ms cubic-bezier(.2,.8,.2,1); }
+      .ticket-shell.flipped .ticket-inner { transform: rotateY(180deg); }
+      .ticket-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+      .ticket-back { transform: rotateY(180deg); }
+      .holo-card {
+        position: relative; overflow: hidden;
+        background:
+          radial-gradient(circle at 18% 20%, rgba(255,255,255,.28), transparent 10rem),
+          radial-gradient(circle at 82% 10%, rgba(247,201,72,.42), transparent 9rem),
+          linear-gradient(135deg, #05866f 0%, #0a5ea8 52%, #382f86 100%);
+      }
+      .holo-card::before {
+        position: absolute; inset: -40%; content: ""; opacity: 0;
+        background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,.04) 36%, rgba(255,255,255,.48) 48%, rgba(247,201,72,.22) 52%, transparent 68%);
+        transform: translateX(-48%) rotate(8deg); transition: opacity 220ms ease;
+      }
+      .holo-card:hover::before { opacity: 1; animation: holo-sweep 1.35s ease forwards; }
+      @keyframes holo-sweep { to { transform: translateX(48%) rotate(8deg); } }
+      .scanner-line { animation: scan 1.65s linear infinite; }
+      @keyframes scan {
+        0% { transform: translateY(-120%); opacity: 0; }
+        12%, 88% { opacity: 1; }
+        100% { transform: translateY(520%); opacity: 0; }
+      }
+      .pulse-glow { animation: pulse-glow 2.1s ease-in-out infinite; }
+      @keyframes pulse-glow {
+        0%,100% { box-shadow: 0 0 0 0 rgba(5,134,111,.34), 0 18px 36px rgba(8,45,79,.2); }
+        50% { box-shadow: 0 0 0 16px rgba(5,134,111,0), 0 18px 36px rgba(8,45,79,.26); }
+      }
+      .bottom-sheet { transform: translateY(105%); transition: transform 360ms cubic-bezier(.2,.8,.2,1); }
+      .bottom-sheet.open { transform: translateY(0); }
+      .qr-grid { display: grid; grid-template-columns: repeat(13,1fr); gap: 3px; }
+      .qr-cell { aspect-ratio: 1; border-radius: 3px; background: #0f1f2e; }
+      #map { height: 100%; min-height: 20rem; width: 100%; }
+      .map-marker { display: grid; width: 2rem; height: 2rem; place-items: center; border: 3px solid #fff; border-radius: 999px; color: #fff; background: #05866f; font-weight: 900; box-shadow: 0 10px 22px rgba(15,31,46,.3); }
+      .map-marker.active { width: 2.5rem; height: 2.5rem; background: #f26b5b; }
+    </style>
   </head>
-  <body class="app-page thai-go-shell">
-    <header class="app-header">
-      <a class="brand" href="#home" aria-label="Sawasdee Transit home">
-        <span class="brand-mark">ST</span>
-        <span>
-          <strong>Sawasdee Transit</strong>
-          <small data-i18n="brand_subtitle">Bangkok tourist mobility</small>
-        </span>
-      </a>
-      <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="#plan" data-i18n="nav_route">Route</a>
-        <a href="#explore" data-i18n="nav_explore">Explore</a>
-        <a href="#ticket" data-i18n="nav_ticket">Pass</a>
-        <a href="#report" data-i18n="nav_report">Report</a>
-        <a href="/admin.html">Ops</a>
-      </nav>
-      <button id="languageToggle" class="language-toggle" type="button">EN</button>
-    </header>
 
-    <main id="home">
-      <section class="tourism-hero v2-hero">
-        <div class="hero-media curated-hero" aria-label="Bangkok tourism hero">
-          <picture>
-            <source srcset="/assets/generated/bangkok-brochure-en-cover.jpg" media="(min-width: 720px)" />
-            <img src="/assets/generated/bangkok-brochure-th-cover.jpg" alt="Bangkok tourism brochure cover" />
-          </picture>
-          <div class="hero-gradient"></div>
-          <div class="hero-floating-card">
-            <span data-i18n="hero_badge">Bangkok-only pilot</span>
-            <strong>45 THB</strong>
-            <small data-i18n="hero_cap_note">Joint Ticket cap simulation</small>
-          </div>
-        </div>
-        <div class="hero-copy gov-card">
-          <p class="eyebrow" data-i18n="hero_eyebrow">Tourism-grade transit OS</p>
-          <h1 data-i18n="hero_title">เที่ยวกรุงเทพฯ แบบรู้ทาง รู้ราคา และใช้บัตรเดียวจบ</h1>
-          <p class="hero-text" data-i18n="hero_body">
-            Landmark-first routing, curated Bangkok POIs, fare-cap simulation, and manual-first incident reporting for tourists.
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="#plan" data-i18n="hero_cta_route">ค้นหาเส้นทาง</a>
-            <a class="button secondary" href="#ticket" data-i18n="hero_cta_ticket">เปิดบัตรเดินทาง</a>
-          </div>
-          <div class="hero-metrics">
-            <div><strong>18</strong><span data-i18n="metric_landmarks">Bangkok landmarks</span></div>
-            <div><strong>3</strong><span data-i18n="metric_modes">Transit modes</span></div>
-            <div><strong>24h</strong><span data-i18n="metric_pass">Tourist pass</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="workspace">
-        <section id="plan" class="route-screen">
-          <div class="route-top">
-            <div class="route-toolbar">
-              <a class="back-pill" href="#home" data-i18n="back">‹ กลับ</a>
-              <div>
-                <p class="eyebrow" data-i18n="smart_route">Smart route</p>
-                <h2 data-i18n="route_title">ผลการค้นหาเส้นทาง</h2>
-              </div>
-              <span class="mini-logo">ST</span>
-            </div>
-
-            <div class="route-search-card">
-              <label>
-                <span data-i18n="from">จาก</span>
-                <select id="routeOrigin"></select>
-              </label>
-              <button class="swap-button" id="swapRoute" type="button" aria-label="Swap route">⇄</button>
-              <label>
-                <span data-i18n="to">ถึง</span>
-                <select id="routeDestination"></select>
-              </label>
-              <button class="button light" id="simulateRoute" type="button" data-i18n="calculate_route">คำนวณเส้นทาง</button>
-            </div>
-
-            <div class="station-banner">
-              <div>
-                <span data-i18n="from">จาก</span>
-                <strong id="originName">สยาม</strong>
-                <p id="originNode"><b>BTS</b> <em>CEN</em></p>
-              </div>
-              <div>
-                <span data-i18n="to">ถึง</span>
-                <strong id="destinationName">วัดอรุณ</strong>
-                <p id="destinationNode"><b class="boat">BOAT</b> <em>N8</em></p>
-              </div>
-            </div>
-          </div>
-
-          <div class="route-sheet">
-            <div class="recommend-head">
-              <h3 data-i18n="recommended">เส้นทางแนะนำ</h3>
-              <span data-i18n="route_disclaimer">Fare and time are pitch-safe simulations</span>
-            </div>
-
-            <div class="recommend-grid" id="recommendGrid"></div>
-            <div class="route-summary-strip" id="routeSummaryStrip"></div>
-
-            <div class="all-routes">
-              <div class="subhead-row">
-                <h3 data-i18n="all_routes">เส้นทางทั้งหมด</h3>
-                <p data-i18n="time_note">* เวลาโดยประมาณ ไม่รวมเวลารอรถ/เรือ</p>
-              </div>
-              <div id="routeList" class="route-list-dense"></div>
-            </div>
-
-            <div class="route-detail-panel">
-              <div class="subhead-row">
-                <h3 data-i18n="route_detail">รายละเอียดเส้นทาง</h3>
-                <button class="button secondary compact" id="copyRoute" type="button" data-i18n="copy_summary">คัดลอกสรุป</button>
-              </div>
-              <div id="routeDetail" class="route-detail"></div>
-            </div>
-          </div>
-        </section>
-
-        <section id="explore" class="surface explore-zone">
-          <div class="section-head">
+  <body class="font-sans text-transit-ink antialiased">
+    <div class="mx-auto min-h-screen max-w-md bg-white shadow-2xl lg:my-6 lg:max-w-6xl lg:overflow-hidden lg:rounded-[2rem]">
+      <header class="sticky top-0 z-40 border-b border-white/60 bg-white/85 px-5 py-4 backdrop-blur-xl lg:px-8">
+        <div class="flex items-center justify-between gap-3">
+          <a href="#route" class="flex items-center gap-3">
+            <div class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue text-sm font-black text-white shadow-card">ST</div>
             <div>
-              <p class="eyebrow" data-i18n="explore_eyebrow">Explore around destination</p>
-              <h2 id="exploreTitle">Wat Arun area</h2>
+              <p class="text-base font-black leading-none">Sawasdee Transit</p>
+              <p class="mt-1 text-xs font-semibold text-slate-500" data-i18n="brandSub">Bangkok Tourist Mobility OS</p>
             </div>
-            <span class="live-pill">MapLibre</span>
-          </div>
-          <div class="map-shell">
-            <div id="map"></div>
-            <div class="map-fallback">
-              <img src="/assets/generated/bangkok-map-preview.jpg" alt="Bangkok tourism map preview" />
-            </div>
-            <div class="map-legend">
-              <span data-i18n="map_legend">Live map with local fallback</span>
-              <strong id="mapFocus">13.7437, 100.4889</strong>
-            </div>
-          </div>
-          <div class="poi-carousel no-scrollbar" id="poiCarousel"></div>
-        </section>
+          </a>
+          <nav class="hidden items-center gap-1 rounded-full bg-slate-100 p-1 text-sm font-bold text-slate-600 lg:flex">
+            <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#route" data-i18n="navRoute">Route</a>
+            <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#explore" data-i18n="navExplore">Explore</a>
+            <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#ticket" data-i18n="navTicket">Ticket</a>
+            <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#report" data-i18n="navReport">Report</a>
+            <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="/admin.html">Ops</a>
+          </nav>
+          <button id="langToggle" class="rounded-full bg-transit-mint px-3 py-2 text-xs font-black text-transit-teal">TH</button>
+        </div>
+      </header>
 
-        <section id="ticket" class="surface premium-ticket-zone">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow" data-i18n="ticket_eyebrow">Digital joint ticket</p>
-              <h2 data-i18n="ticket_title">บัตรเดินทาง QR แบบแตะใช้จริง</h2>
-            </div>
-            <button class="button secondary compact" id="refreshTicket" type="button">Refresh</button>
-          </div>
-
-          <div class="ticket-layout refined">
-            <form id="ticketForm" class="pass-form">
-              <label>
-                <span data-i18n="passenger_name">Passenger name</span>
-                <input name="holder_name" value="Poom Tourist" maxlength="120" required />
-              </label>
-              <div class="grid-2">
-                <label>
-                  <span data-i18n="origin">Origin</span>
-                  <input name="origin" id="ticketOriginInput" value="Siam" maxlength="160" required />
-                </label>
-                <label>
-                  <span data-i18n="destination">Destination</span>
-                  <input name="destination" id="ticketDestinationInput" value="Wat Arun" maxlength="160" required />
-                </label>
+      <main>
+        <section id="route" class="relative">
+          <div class="hero-image h-[560px] bg-cover bg-center lg:h-[680px]">
+            <div class="flex h-full flex-col justify-end px-5 pb-28 pt-8 lg:px-10 lg:pb-32">
+              <div class="max-w-3xl text-white">
+                <p class="mb-3 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] backdrop-blur-lg" data-i18n="heroBadge">Bangkok-only pilot</p>
+                <h1 class="text-5xl font-black leading-[0.95] tracking-tight lg:text-7xl" data-i18n="heroTitle">Navigate Bangkok like a local.</h1>
+                <p class="mt-5 max-w-xl text-base font-medium leading-7 text-white/86 lg:text-lg" data-i18n="heroBody">
+                  Landmark-first routing, transparent multimodal fares, and a live digital Joint Ticket for rail, bus, and boat.
+                </p>
               </div>
-              <input name="pass_type" type="hidden" value="tourist_day_pass" />
-              <button class="button primary" type="submit" data-i18n="issue_pass">ออกบัตรตั๋วร่วม</button>
-              <p id="ticketMessage" class="message" role="status"></p>
-            </form>
+            </div>
+          </div>
 
-            <article class="pass-device" id="ticketCard">
-              <button class="pass-flip-button" id="flipTicket" type="button" data-i18n="show_qr">แตะเพื่อแสดง QR</button>
-              <div class="pass-card-inner" id="passCardInner">
-                <section class="pass-face pass-front">
-                  <div class="pass-topline">
-                    <span>Sawasdee Transit</span>
-                    <strong id="ticketStatus">Not created</strong>
-                  </div>
-                  <div class="pass-chip"></div>
-                  <h3>Tourist Joint Pass</h3>
-                  <p id="ticketHolder">-</p>
-                  <div class="pass-route">
-                    <span id="passOrigin">Siam</span>
-                    <i></i>
-                    <span id="passDestination">Wat Arun</span>
-                  </div>
-                  <div class="ticket-meta">
-                    <div><span>Used</span><strong><span id="ticketUsed">0</span>/45 THB</strong></div>
-                    <div><span>Rides</span><strong id="ticketRides">0</strong></div>
-                    <div><span>Valid until</span><strong id="ticketValid">-</strong></div>
-                  </div>
-                </section>
+          <div class="relative z-10 -mt-24 px-5 lg:px-10">
+            <div class="glass rounded-[2rem] border border-white/70 p-4 shadow-soft lg:p-6">
+              <div class="grid gap-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+                <label class="block">
+                  <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-slate-500" data-i18n="origin">Origin</span>
+                  <select id="originSelect" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-lg font-extrabold outline-none"></select>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-slate-500" data-i18n="destination">Destination landmark</span>
+                  <select id="destinationSelect" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-lg font-extrabold outline-none"></select>
+                </label>
+                <button id="planRouteBtn" class="h-[60px] rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-6 text-base font-black text-white shadow-card transition hover:scale-[1.01]" data-i18n="planRoute">Plan route</button>
+              </div>
+            </div>
+          </div>
 
-                <section class="pass-face pass-back">
-                  <div class="qr-shell">
-                    <div class="qr-empty" id="qrEmpty">Generate ticket first</div>
-                    <img id="ticketQr" alt="Joint ticket QR" hidden />
+          <div class="px-5 pb-4 pt-5 lg:px-10">
+            <article class="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-card">
+              <div class="bg-gradient-to-br from-transit-navy to-transit-blue p-5 text-white lg:p-7">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p class="text-xs font-black uppercase tracking-[0.16em] text-white/70" data-i18n="recommendedRoute">Recommended route</p>
+                    <h2 id="routeTitle" class="mt-2 text-2xl font-black lg:text-3xl">BTS + MRT to Yaowarat</h2>
+                    <p id="routeNote" class="mt-2 text-sm font-medium text-white/78">Fast, predictable, and protected by the Joint Ticket cap.</p>
                   </div>
-                  <p data-i18n="qr_instruction">Show this QR at rail, bus, or boat operator gate.</p>
-                </section>
+                  <div class="rounded-2xl bg-white/12 px-4 py-3 text-right backdrop-blur">
+                    <p class="text-xs font-bold text-white/70" data-i18n="finalFare">Final fare</p>
+                    <p id="finalFare" class="text-3xl font-black">45฿</p>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid grid-cols-3 gap-2 rounded-2xl bg-white/10 p-1">
+                  <button data-mode="rail" class="mode-btn rounded-xl bg-white px-3 py-3 text-sm font-black text-transit-blue">Rail</button>
+                  <button data-mode="bus" class="mode-btn rounded-xl px-3 py-3 text-sm font-black text-white/80">Bus</button>
+                  <button data-mode="boat" class="mode-btn rounded-xl px-3 py-3 text-sm font-black text-white/80">Boat</button>
+                </div>
+              </div>
+
+              <div class="p-5 lg:p-7">
+                <div class="grid gap-3 lg:grid-cols-3">
+                  <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-slate-400" data-i18n="time">Time</p><p id="routeTime" class="mt-2 text-2xl font-black">~20 min</p></div>
+                  <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-slate-400" data-i18n="stops">Stops</p><p id="routeStops" class="mt-2 text-2xl font-black">9 stops</p></div>
+                  <div class="rounded-2xl bg-transit-mint p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal/70" data-i18n="saved">Saved</p><p id="routeSaved" class="mt-2 text-2xl font-black text-transit-teal">4 THB</p></div>
+                </div>
+
+                <button id="fareToggle" class="mt-5 flex w-full items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 text-left font-black">
+                  <span data-i18n="fareBreakdown">Receipt-style fare breakdown</span>
+                  <span id="fareChevron" class="text-xl transition">⌄</span>
+                </button>
+                <div id="farePanel" class="mt-3 hidden rounded-2xl bg-slate-50 p-4"></div>
+
+                <div class="mt-5 rounded-3xl bg-slate-50 p-4">
+                  <div class="mb-3 flex items-center justify-between">
+                    <p class="font-black" data-i18n="routeDetails">Route details</p>
+                    <span id="routeDisclaimer" class="text-xs font-bold text-slate-400">simulation</span>
+                  </div>
+                  <div id="routeSteps" class="space-y-3"></div>
+                </div>
               </div>
             </article>
           </div>
-
-          <div class="tap-console refined">
-            <div class="section-head inline">
-              <div>
-                <p class="eyebrow">Gate simulation</p>
-                <h3 data-i18n="tap_title">แตะบัตรและคุมค่าโดยสารไม่เกิน 45 บาท</h3>
-              </div>
-            </div>
-            <div class="route-form">
-              <label>
-                Mode
-                <select id="tapMode">
-                  <option value="rail">Rail</option>
-                  <option value="bus">Bus</option>
-                  <option value="boat">Boat</option>
-                </select>
-              </label>
-              <label>
-                Station
-                <input id="tapStation" value="Saphan Taksin" />
-              </label>
-              <label>
-                Fare
-                <input id="tapFare" type="number" value="32" min="0" max="300" />
-              </label>
-              <button class="button secondary" id="tapTicket" type="button">Tap ticket</button>
-            </div>
-            <div id="tapHistory" class="timeline"></div>
-          </div>
         </section>
 
-        <section id="report" class="surface report-zone">
-          <div class="section-head">
+        <section id="explore" class="px-5 py-6 lg:px-10">
+          <div class="mb-5 flex items-end justify-between gap-4">
             <div>
-              <p class="eyebrow" data-i18n="report_eyebrow">Manual-first incident report</p>
-              <h2 data-i18n="report_title">แจ้งปัญหาการเดินทาง</h2>
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="exploreAround">Explore around destination</p>
+              <h2 id="exploreTitle" class="mt-2 text-3xl font-black tracking-tight">Wat Arun area</h2>
             </div>
-            <span class="live-pill" data-i18n="report_badge">No AI required</span>
+            <span class="hidden rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-500 lg:inline-flex">MapLibre</span>
           </div>
 
-          <form id="reportForm" class="form report-form-v2">
-            <div class="grid-2">
-              <label>
-                Category
-                <select name="category" required>
-                  <option value="taxi_refusal">Taxi refusal</option>
-                  <option value="overpricing">Overpricing</option>
-                  <option value="broken_pavement">Broken pavement</option>
-                  <option value="unsafe_crossing">Unsafe crossing</option>
-                  <option value="unclear_signage">Unclear signage</option>
-                  <option value="crowding">Crowding</option>
-                  <option value="harassment">Harassment</option>
-                  <option value="lost_property">Lost property</option>
-                  <option value="other">Other</option>
-                </select>
-              </label>
-              <label>
-                Transport mode
-                <select name="transport_mode">
-                  <option value="taxi">Taxi</option>
-                  <option value="rail">Rail</option>
-                  <option value="bus">Bus</option>
-                  <option value="boat">Boat</option>
-                  <option value="walk">Walking infrastructure</option>
-                  <option value="other">Other</option>
-                </select>
-              </label>
+          <div class="relative h-72 overflow-hidden rounded-[2rem] bg-slate-950 shadow-card lg:h-96">
+            <div id="map" class="absolute inset-0"></div>
+            <img id="mapFallback" class="absolute inset-0 h-full w-full object-cover opacity-90" src="/assets/generated/bangkok-map-preview.jpg" alt="Bangkok map fallback" />
+            <div class="absolute bottom-5 left-5 right-5 rounded-3xl bg-slate-950/70 p-4 text-white backdrop-blur-xl">
+              <p class="text-xs font-black uppercase tracking-[0.16em] text-white/60" data-i18n="touristContext">Tourist context</p>
+              <p id="mapContext" class="mt-2 text-lg font-black">Walkable heritage area with verified POI cluster.</p>
             </div>
+          </div>
 
-            <div class="grid-2">
-              <label>
-                Plate / vehicle / train ID
-                <input name="vehicle_id" placeholder="e.g. 1กข 1234, BTS car no., bus route 40" maxlength="80" />
-              </label>
-              <label>
-                Incident time
-                <div class="inline-input">
-                  <input name="incident_time" id="incidentTime" type="datetime-local" />
-                  <button class="button secondary compact" id="useNow" type="button">Now</button>
+          <div id="poiCarousel" class="no-scrollbar -mx-5 mt-5 flex gap-4 overflow-x-auto px-5 pb-2"></div>
+        </section>
+
+        <section id="ticket" class="px-5 py-6 lg:px-10">
+          <div class="mb-5">
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="wowFactor">The wow factor</p>
+            <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="ticketTitle">3D Holographic Joint Ticket</h2>
+          </div>
+
+          <form id="ticketForm" class="mb-5 grid gap-3 rounded-[2rem] bg-white p-4 shadow-card lg:grid-cols-[1fr_1fr_auto]">
+            <input name="holder_name" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Poom Tourist" maxlength="120" required />
+            <input name="origin" id="ticketOrigin" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Siam" maxlength="160" required />
+            <input name="destination" id="ticketDestination" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Wat Arun" maxlength="160" required />
+            <input name="pass_type" type="hidden" value="tourist_day_pass" />
+            <button class="rounded-2xl bg-transit-ink px-5 py-4 font-black text-white lg:col-span-3" data-i18n="generateTicket">Generate ticket</button>
+            <p id="ticketMessage" class="text-sm font-bold text-slate-500 lg:col-span-3"></p>
+          </form>
+
+          <div class="ticket-shell ticket-perspective mx-auto max-w-xl">
+            <div class="ticket-inner relative aspect-[1.586/1]">
+              <section class="ticket-face holo-card absolute inset-0 rounded-[1.75rem] p-6 text-white shadow-soft">
+                <div class="relative z-10 flex h-full flex-col justify-between">
+                  <div class="flex items-start justify-between">
+                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-white/70">Sawasdee Transit</p><h3 class="mt-2 text-2xl font-black">Tourist Joint Pass</h3></div>
+                    <span id="ticketStatus" class="rounded-full bg-white/16 px-3 py-2 text-xs font-black backdrop-blur">READY</span>
+                  </div>
+                  <div>
+                    <div class="mb-5 h-11 w-16 rounded-xl bg-gradient-to-br from-yellow-200 to-yellow-600 shadow-lg"></div>
+                    <div class="flex items-end justify-between gap-4">
+                      <div><p class="text-xs font-bold text-white/60">Passenger</p><p id="ticketHolder" class="text-xl font-black">-</p></div>
+                      <div class="text-right"><p class="text-xs font-bold text-white/60">Fare cap</p><p class="text-2xl font-black"><span id="ticketUsed">0</span>/45</p></div>
+                    </div>
+                  </div>
                 </div>
-              </label>
+              </section>
+              <section class="ticket-face ticket-back absolute inset-0 rounded-[1.75rem] bg-white p-6 shadow-soft">
+                <div class="flex h-full flex-col items-center justify-between">
+                  <div class="text-center"><p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Live ticket QR</p><p id="ticketCountdown" class="mt-1 text-2xl font-black text-transit-ink">Valid for 04:59</p></div>
+                  <div class="relative grid h-44 w-44 place-items-center overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-inner">
+                    <div class="grid h-full w-full place-items-center"><div class="text-sm font-black text-slate-400" id="qrEmpty">Generate first</div><img id="ticketQr" class="w-full" alt="Joint ticket QR" hidden /></div>
+                    <div class="scanner-line absolute left-4 right-4 h-1 rounded-full bg-transit-teal shadow-[0_0_18px_rgba(5,134,111,.9)]"></div>
+                  </div>
+                  <p class="text-center text-xs font-bold text-slate-500">Operator validation simulated for pitch demo.</p>
+                </div>
+              </section>
             </div>
+          </div>
+          <button id="tapToUseBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 text-base font-black text-white shadow-card lg:mx-auto lg:block lg:max-w-xl">Tap to Use</button>
+          <div class="mt-4 rounded-[1.5rem] bg-white p-4 text-center font-black text-slate-600 shadow-card lg:mx-auto lg:max-w-xl">Today's Rides: <span id="ticketRides" class="text-transit-blue">0</span><span class="mx-2 text-slate-300">|</span>Total Billed: <span class="text-transit-teal"><span id="ticketBilled">0</span>/45 THB Cap</span></div>
+        </section>
 
-            <label>
-              Location label
-              <input name="location_label" id="locationLabel" placeholder="e.g. Wat Mangkon Exit 1, Yaowarat Road" maxlength="180" />
-            </label>
-
-            <div class="grid-2">
-              <label>
-                Latitude
-                <input name="latitude" type="number" step="any" min="-90" max="90" value="13.7563" required />
-              </label>
-              <label>
-                Longitude
-                <input name="longitude" type="number" step="any" min="-180" max="180" value="100.5018" required />
-              </label>
+        <section id="report" class="px-5 py-6 pb-28 lg:px-10">
+          <form id="reportForm" class="rounded-[2rem] bg-white p-5 shadow-card lg:p-7">
+            <div class="mb-5"><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Manual-first incident report</p><h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="reportTitle">Report a transit issue</h2><p class="mt-2 text-sm font-semibold leading-6 text-slate-500" data-i18n="reportBody">No Vision AI required. Provide clear manual evidence first.</p></div>
+            <div class="grid gap-4 lg:grid-cols-2">
+              <label><span class="mb-2 block text-sm font-black">Category</span><select name="category" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi_refusal">Taxi refusal</option><option value="overpricing">Overpricing</option><option value="broken_pavement">Broken pavement</option><option value="unclear_signage">Unclear signage</option><option value="unsafe_crossing">Unsafe crossing</option><option value="other">Other</option></select></label>
+              <label><span class="mb-2 block text-sm font-black">Transport mode</span><select name="transport_mode" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi">Taxi</option><option value="rail">Rail</option><option value="bus">Bus</option><option value="boat">Boat</option><option value="walk">Walking infrastructure</option></select></label>
+              <label><span class="mb-2 block text-sm font-black">Plate / vehicle / train ID</span><input name="vehicle_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="1กข 1234, BTS car no., bus route" /></label>
+              <label><span class="mb-2 block text-sm font-black">Incident time</span><div class="flex gap-2"><input id="incidentTime" name="incident_time" type="datetime-local" class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /><button id="useNow" type="button" class="rounded-2xl bg-transit-mint px-4 font-black text-transit-teal">Now</button></div></label>
+              <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Location label</span><input name="location_label" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Wat Mangkon Exit 1, Yaowarat Road" /></label>
+              <input name="latitude" type="hidden" value="13.7563" /><input name="longitude" type="hidden" value="100.5018" />
+              <label><span class="mb-2 block text-sm font-black">Severity</span><select name="severity" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+              <label><span class="mb-2 block text-sm font-black">Optional photo evidence</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /></label>
+              <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Description</span><textarea name="description" minlength="5" maxlength="2000" class="min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-semibold outline-none" placeholder="Add clear context: location, fare requested, vehicle number, staff behavior, signage issue..." required></textarea></label>
+              <label><span class="mb-2 block text-sm font-black">Name</span><input name="reporter_name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
+              <label><span class="mb-2 block text-sm font-black">Contact</span><input name="contact" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
             </div>
-
-            <button class="button secondary" type="button" id="useLocation">Use current location</button>
-
-            <label>
-              Severity
-              <select name="severity">
-                <option value="low">Low - inconvenience</option>
-                <option value="medium">Medium - needs follow-up</option>
-                <option value="high">High - safety or scam risk</option>
-              </select>
-            </label>
-
-            <label>
-              Description
-              <textarea name="description" rows="5" minlength="5" maxlength="2000" placeholder="Describe what happened, who was involved, price shown, signage, or visible evidence." required></textarea>
-            </label>
-
-            <label>
-              Optional photo evidence
-              <input name="image" type="file" accept="image/jpeg,image/png,image/webp" />
-            </label>
-
-            <div class="grid-2">
-              <label>
-                Name
-                <input name="reporter_name" type="text" maxlength="120" placeholder="Optional" />
-              </label>
-              <label>
-                Contact
-                <input name="contact" type="text" maxlength="160" placeholder="Optional" />
-              </label>
-            </div>
-
-            <button class="button primary" type="submit">Submit report</button>
-            <p id="message" class="message" role="status"></p>
+            <button class="mt-5 w-full rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 font-black text-white shadow-card">Submit Smart Report</button>
+            <p id="message" class="mt-3 text-sm font-bold text-slate-500"></p>
           </form>
         </section>
-      </section>
-    </main>
+      </main>
 
-    <nav class="mobile-nav" aria-label="Mobile navigation">
-      <a href="#plan" data-i18n="nav_route">Route</a>
-      <a href="#explore" data-i18n="nav_explore">Explore</a>
-      <a href="#ticket" data-i18n="nav_ticket">Pass</a>
-      <a href="#report" data-i18n="nav_report">Report</a>
-    </nav>
+      <nav class="fixed bottom-3 left-1/2 z-40 grid w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 grid-cols-4 rounded-[1.5rem] border border-white/70 bg-white/90 p-2 text-center text-xs font-black text-slate-500 shadow-soft backdrop-blur-xl lg:hidden">
+        <a class="rounded-2xl px-2 py-2 text-transit-teal" href="#route">Route</a><a class="rounded-2xl px-2 py-2" href="#explore">Explore</a><a class="rounded-2xl px-2 py-2" href="#ticket">Ticket</a><a class="rounded-2xl px-2 py-2" href="#report">Report</a>
+      </nav>
+    </div>
 
+    <button id="aiFab" class="pulse-glow fixed bottom-24 right-5 z-50 grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-transit-teal to-transit-blue text-3xl text-white shadow-soft lg:bottom-8 lg:right-8">✨</button>
+    <div id="sheetOverlay" class="pointer-events-none fixed inset-0 z-50 bg-slate-950/0 transition"></div>
+    <aside id="aiSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
+      <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
+      <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Sawasdee AI Copilot</p><h3 class="mt-1 text-2xl font-black">Need a local tip?</h3></div><button id="closeSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button></div>
+      <div id="chatLog" class="mt-5 max-h-72 space-y-3 overflow-y-auto"><div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">Need a local tip? Ask Sawasdee AI about routes, etiquette, food spots, or fare safety.</div></div>
+      <form id="chatForm" class="mt-4 flex gap-2"><input id="chatInput" class="min-h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none" placeholder="Ask Sawasdee AI..." /><button class="rounded-2xl bg-transit-ink px-5 font-black text-white">Send</button></form>
+    </aside>
     <script src="/app.js"></script>
   </body>
 </html>

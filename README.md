@@ -40,9 +40,10 @@ Reserved for next sprint:
 
 - Backend: FastAPI
 - Runtime DB: SQLite
-- Frontend: Static HTML/CSS/JS served by FastAPI
+- Frontend: Premium mobile-first static HTML + Tailwind CDN + Vanilla JS served by FastAPI
 - QR generation: `qrcode`
 - Map UI: MapLibre GL JS using a tokenless demo style, with local image fallback
+- Visual assets: local optimized Bangkok landmark images, no random image endpoint in the main app
 - Environment management: Conda
 
 ## Repository Layout
@@ -191,6 +192,7 @@ Current implementation:
 - Joint Ticket 45 THB cap is represented as a policy simulation
 - MapLibre renders the map using an external demo style when internet is available
 - Local brochure-map preview is shown as fallback
+- Public app UI is merged from the premium prototype direction and lives in `services/web/index.html`
 
 Recommended production path:
 
