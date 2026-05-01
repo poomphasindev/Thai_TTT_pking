@@ -30,7 +30,9 @@ Working:
 - YouTube tourism hero video with local image fallback
 - MapLibre map with OpenStreetMap Overpass POI layer and local brochure-map fallback
 - Numbered POI cards that focus matching map pins and open map popups
-- Product story reframed around Thai Go-style EV tourism loops plus the 8-45 THB Joint Ticket policy
+- Product story reframed around destination-first EV tourism loops plus an 8-45 THB fair-fare cap
+- AI Trip Intelligence section showing where RAG fits in the user journey
+- Passenger-side and operator-side payment confirmation simulation
 
 Reserved for next sprint:
 
@@ -131,6 +133,7 @@ TTM_TAT_API_BASE_URL=https://tatdataapi.io/api/v2
 
 TTM_OPENAI_API_KEY=
 TTM_GOOGLE_API_KEY=
+TTM_GEMINI_API_KEY=
 
 TTM_DATABASE_PATH=data/app.db
 TTM_UPLOAD_DIR=data/uploads
@@ -252,15 +255,16 @@ Move like local, discover like traveler.
 
 The app combines two ideas:
 
-- Thai Go-style tourism service: EV buses and boats connect Bangkok landmarks, food stops, malls, and cultural activities.
-- Public Joint Ticket policy: one connected trip session removes duplicate entry fees and keeps bus, rail, and boat travel inside the 8-45 THB fare logic.
+- Destination-first tourism mobility: EV buses and boats connect Bangkok landmarks, food stops, malls, and cultural activities.
+- Fair-fare cap: one connected trip session removes duplicate entry fees and keeps bus, rail, and boat travel inside the 8-45 THB fare logic.
 
 In product terms:
 
 - Tourists choose a landmark first.
 - Sawasdee Transit explains which rail/bus/boat layer to use.
-- The Joint Ticket QR becomes the shared validation object.
+- The Fair-Fare QR becomes the shared validation object.
 - Map cards show nearby verified POIs with numbered pins instead of pretending to have paid Google ratings.
+- AI Trip Intelligence uses destination facts, live POIs, reports, and fare state to answer what tourists should do after arrival.
 
 Recommended production path:
 

@@ -7,6 +7,8 @@ const state = {
   placeCategory: "food",
   user: null,
   activeTicketId: localStorage.getItem("activeTicketId"),
+  activeTicket: null,
+  pendingPayment: null,
   map: null,
   markers: [],
   visiblePlaces: [],
@@ -15,14 +17,14 @@ const state = {
 
 const copy = {
   en: {
-    brandSub: "Thai Go tourism loop + Joint Ticket policy",
+    brandSub: "Bangkok destination mobility OS",
     navRoute: "Route",
     navExplore: "Explore",
     navTicket: "Ticket",
     navReport: "Report",
     heroBadge: "Bangkok-only pilot",
     heroTitle: "Move like local, discover like traveler.",
-    heroBody: "A tourist-first mobility layer that blends Thai Go-style EV bus and boat loops with an 8-45 THB public Joint Ticket cap.",
+    heroBody: "A tourist-first mobility layer that blends EV bus and boat loops, rail connectors, trusted local context, and an 8-45 THB fair-fare cap.",
     origin: "Origin",
     destination: "Destination landmark",
     planRoute: "Plan route",
@@ -36,20 +38,20 @@ const copy = {
     exploreAround: "Explore around destination",
     touristContext: "Tourist context",
     wowFactor: "The wow factor",
-    ticketTitle: "3D Holographic Joint Ticket",
+    ticketTitle: "3D Holographic Fair-Fare Pass",
     generateTicket: "Issue my Joint Ticket",
     reportTitle: "Report a transit issue",
     reportBody: "Manual-first reporting with category, place, time, vehicle ID, and photo evidence. Vision AI can be added later without changing this flow.",
   },
   th: {
-    brandSub: "ระบบท่องเที่ยว Thai Go + นโยบายตั๋วร่วม",
+    brandSub: "ระบบเดินทางท่องเที่ยวกรุงเทพฯ",
     navRoute: "เส้นทาง",
     navExplore: "สำรวจ",
     navTicket: "บัตร",
     navReport: "แจ้งปัญหา",
     heroBadge: "โครงการนำร่องกรุงเทพฯ",
     heroTitle: "เดินทางเหมือนคนพื้นที่ เที่ยวเหมือนนักเดินทาง",
-    heroBody: "รวมแนวคิด Thai Go รถบัส/เรือ EV สำหรับท่องเที่ยว เข้ากับเพดานตั๋วร่วม 8-45 บาทให้ใช้เข้าใจง่ายในแอพเดียว",
+    heroBody: "รวมรถบัสและเรือ EV รถไฟฟ้า บริบทท้องถิ่น และเพดานค่าเดินทาง 8-45 บาทให้เข้าใจง่ายในแอพเดียว",
     origin: "ต้นทาง",
     destination: "แลนด์มาร์กปลายทาง",
     planRoute: "ค้นหาเส้นทาง",
@@ -63,8 +65,8 @@ const copy = {
     exploreAround: "สำรวจรอบจุดหมาย",
     touristContext: "บริบทสำหรับนักท่องเที่ยว",
     wowFactor: "ฟีเจอร์เด่น",
-    ticketTitle: "บัตรตั๋วร่วม 3D Holographic",
-    generateTicket: "ออกบัตรตั๋วร่วม",
+    ticketTitle: "บัตร Fair-Fare 3D Holographic",
+    generateTicket: "ออกบัตร Fair-Fare",
     reportTitle: "แจ้งปัญหาการเดินทาง",
     reportBody: "แจ้งแบบ manual-first เลือกหมวด ระบุสถานที่ เวลา เลขรถ และแนบรูปได้ ส่วน Vision AI เพิ่มต่อได้โดยไม่เปลี่ยน flow",
   },
@@ -135,7 +137,7 @@ const landmarks = [
 
 const routeModes = {
   rail: {
-    title: { en: "Joint Ticket: rail spine + EV feeder", th: "ตั๋วร่วม: รถไฟฟ้าแกนหลัก + EV feeder" },
+    title: { en: "Fair-Fare route: rail spine + EV feeder", th: "เส้นทาง Fair-Fare: รถไฟฟ้าแกนหลัก + EV feeder" },
     note: { en: "Use rail for the long segment, then connect to the tourist loop without paying duplicate entry fees.", th: "ใช้รถไฟฟ้าเป็นแกนหลัก แล้วต่อเข้าโครงข่ายท่องเที่ยวโดยไม่เสียค่าแรกเข้าซ้ำ" },
     time: 28,
     stops: 8,
@@ -146,14 +148,14 @@ const routeModes = {
       { label: "EV feeder / pier connector", fare: 16 },
     ],
     steps: [
-      { icon: "1", title: "Choose the landmark, not the line", th: "เลือกแลนด์มาร์ก ไม่ต้องเลือกสายเอง", detail: "Start at {originNode}. The app picks the rail spine and tourist feeder for {destination}.", detailTh: "เริ่มที่ {originNode} แอพเลือกแกนรถไฟฟ้าและ feeder ท่องเที่ยวไป {destination} ให้" },
-      { icon: "2", title: "Scan once into the Joint Ticket session", th: "สแกนครั้งแรกเพื่อเปิด session ตั๋วร่วม", detail: "The backend starts one trip session and stops duplicate entry fees across connected modes.", detailTh: "backend เปิด trip session เดียว และกันค่าแรกเข้าซ้ำเมื่อเปลี่ยนระบบ" },
-      { icon: "3", title: "Transfer to EV bus / boat loop", th: "ต่อรถบัส EV หรือเรือ EV loop", detail: "At the interchange, show the same QR to the Thai Go-style operator or gate staff.", detailTh: "ถึงจุดต่อระบบ แสดง QR เดิมกับผู้ให้บริการแบบ Thai Go หรือเจ้าหน้าที่" },
+      { icon: "1", title: "Choose the landmark, not the line", th: "เลือกแลนด์มาร์ก ไม่ต้องเลือกสายเอง", detail: "Start at {originNode}. The app picks the rail spine and tourism feeder for {destination}.", detailTh: "เริ่มที่ {originNode} แอพเลือกแกนรถไฟฟ้าและ feeder ท่องเที่ยวไป {destination} ให้" },
+      { icon: "2", title: "Scan once into one fare session", th: "สแกนครั้งแรกเพื่อเปิด fare session เดียว", detail: "The backend starts one trip session and stops duplicate entry fees across connected modes.", detailTh: "backend เปิด trip session เดียว และกันค่าแรกเข้าซ้ำเมื่อเปลี่ยนระบบ" },
+      { icon: "3", title: "Transfer to EV bus / boat loop", th: "ต่อรถบัส EV หรือเรือ EV loop", detail: "At the interchange, show the same QR to the operator or gate staff.", detailTh: "ถึงจุดต่อระบบ แสดง QR เดิมกับผู้ให้บริการหรือเจ้าหน้าที่" },
       { icon: "4", title: "Arrive with capped billing", th: "ถึงจุดหมายพร้อมค่าโดยสารมีเพดาน", detail: "Exit near {destNode}. The trip stays inside the 45 THB cap simulation.", detailTh: "ออกใกล้ {destNode} และค่าโดยสารอยู่ในเพดานจำลอง 45 บาท" },
     ],
   },
   bus: {
-    title: { en: "Thai Go Day Loop: EV bus focused", th: "Thai Go Day Loop: เน้นรถบัส EV" },
+    title: { en: "Destination Day Loop: EV bus focused", th: "Destination Day Loop: เน้นรถบัส EV" },
     note: { en: "Tourism-first loop for hop-on/hop-off style travel. Cheaper, clearer, and more local than point-to-point taxi.", th: "loop ท่องเที่ยวแบบขึ้นลงได้หลายจุด ถูกและเข้าใจง่ายกว่าเรียกรถเป็นเที่ยว" },
     time: 42,
     stops: 12,
@@ -256,7 +258,7 @@ function renderRoute() {
       <div class="border-t border-dashed border-slate-300 pt-3 flex justify-between text-slate-500"><span>Subtotal without policy cap</span><span>${mode.fare} THB</span></div>
       <div class="rounded-2xl bg-amber-100 px-4 py-3 flex justify-between gap-4 font-black text-amber-800"><span>Joint Ticket Cap Applied</span><span>-${saved} THB</span></div>
       <div class="flex items-end justify-between pt-1"><span class="text-base font-black">Total billed today</span><span class="text-3xl font-black text-transit-teal">${mode.total} THB</span></div>
-      <p class="rounded-2xl bg-white px-4 py-3 text-xs leading-5 text-slate-500">Policy logic: bus starts at 8 THB plus distance, rail starts at 15 THB plus distance, and one connected journey is capped at 45 THB. Thai Go-style tourism loops become the visitor-friendly feeder layer.</p>
+      <p class="rounded-2xl bg-white px-4 py-3 text-xs leading-5 text-slate-500">Fare logic: bus starts at 8 THB plus distance, rail starts at 15 THB plus distance, and one connected journey is capped at 45 THB. EV tourism loops become the visitor-friendly feeder layer.</p>
     </div>`;
 
   $("#routeSteps").innerHTML = mode.steps.map((step, index) => {
@@ -447,6 +449,14 @@ function wireEvents() {
     shell.classList.toggle("flipped");
     $("#tapToUseBtn").textContent = shell.classList.contains("flipped") ? "Hide QR" : "Tap to Use";
   });
+  $("#simulateScanBtn").addEventListener("click", openPaymentFlow);
+  $("#closePaymentSheet").addEventListener("click", closeSheets);
+  $("#confirmPaymentBtn").addEventListener("click", confirmPayment);
+  $("#askAiRouteBtn").addEventListener("click", () => {
+    openAiSheet();
+    $("#chatInput").value = `Give me an arrival brief for ${localName(currentDestination())}`;
+    $("#chatInput").focus();
+  });
 
   $("#authButton").addEventListener("click", openAuthSheet);
   $("#closeAuthSheet").addEventListener("click", closeSheets);
@@ -535,6 +545,7 @@ async function submitTicket(event) {
 }
 
 function renderTicket(ticket) {
+  state.activeTicket = ticket;
   $("#ticketStatus").textContent = ticket.status.toUpperCase();
   $("#ticketHolder").textContent = ticket.holder_name;
   $("#ticketUsed").textContent = ticket.accumulated_fare_thb;
@@ -543,6 +554,51 @@ function renderTicket(ticket) {
   $("#ticketQr").src = `/api/tickets/${ticket.id}/qr.svg?ts=${Date.now()}`;
   $("#ticketQr").hidden = false;
   $("#qrEmpty").hidden = true;
+}
+
+function openPaymentFlow() {
+  if (!state.activeTicket) {
+    $("#ticketMessage").textContent = "Generate a ticket first, then simulate the staff scan.";
+    return;
+  }
+  const dest = currentDestination();
+  const fareByMode = { rail: 32, bus: 16, boat: 21 };
+  const rawFare = fareByMode[state.mode] || 17;
+  const already = state.activeTicket.accumulated_fare_thb || 0;
+  const charge = Math.min(rawFare, Math.max(0, 45 - already));
+  state.pendingPayment = {
+    mode: state.mode === "rail" ? "rail" : state.mode,
+    station_name: dest.node,
+    fare_thb: rawFare,
+    charged_thb: charge,
+  };
+  $("#paymentOperator").textContent = `${state.mode.toUpperCase()} · ${dest.node}`;
+  $("#paymentRawFare").textContent = `${rawFare} THB`;
+  $("#paymentAlready").textContent = `${already} THB`;
+  $("#paymentCharge").textContent = `${charge} THB`;
+  $("#paymentMessage").textContent = charge === 0 ? "Cap reached. This scan is validated with no extra charge." : "Review the fare before confirming.";
+  openSheet("#paymentSheet");
+}
+
+async function confirmPayment() {
+  if (!state.activeTicket || !state.pendingPayment) return;
+  $("#paymentMessage").textContent = "Validating scan and charging fare...";
+  try {
+    const result = await request(`/api/tickets/${state.activeTicket.id}/tap`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: state.pendingPayment.mode,
+        station_name: state.pendingPayment.station_name,
+        fare_thb: state.pendingPayment.fare_thb,
+      }),
+    });
+    renderTicket(result.ticket);
+    $("#paymentMessage").textContent = `Paid ${result.tap.charged_thb} THB. Saved ${result.saved_thb} THB from the cap.`;
+    setTimeout(closeSheets, 900);
+  } catch (error) {
+    $("#paymentMessage").textContent = error.message;
+  }
 }
 
 async function submitReport(event) {

@@ -162,12 +162,12 @@
             <div class="grid gap-3 lg:grid-cols-3">
               <article class="rounded-[1.5rem] bg-transit-ink p-5 text-white shadow-card">
                 <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-gold">Tourism layer</p>
-                <h3 class="mt-2 text-xl font-black">Thai Go-style EV loop</h3>
+                <h3 class="mt-2 text-xl font-black">EV destination loop</h3>
                 <p class="mt-2 text-sm font-semibold leading-6 text-white/72">Connect temples, riverfront malls, Yaowarat, and workshop/food stops through buses and boats tourists can understand.</p>
               </article>
               <article class="rounded-[1.5rem] bg-white p-5 shadow-card">
                 <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Public policy layer</p>
-                <h3 class="mt-2 text-xl font-black">8-45 THB Joint Ticket</h3>
+                <h3 class="mt-2 text-xl font-black">8-45 THB Fair-Fare Cap</h3>
                 <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">One trip session removes duplicate entry fees and caps connected bus, rail, and boat journeys at 45 THB.</p>
               </article>
               <article class="rounded-[1.5rem] bg-transit-mint p-5 shadow-card">
@@ -225,6 +225,35 @@
           </div>
         </section>
 
+        <section id="ai-trip" class="px-5 py-6 lg:px-10">
+          <div class="grid gap-4 lg:grid-cols-[1.05fr_.95fr]">
+            <article class="rounded-[2rem] bg-transit-ink p-5 text-white shadow-card lg:p-7">
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-gold">AI Trip Intelligence</p>
+              <h2 class="mt-2 text-3xl font-black tracking-tight">Your arrival plan, not just a route.</h2>
+              <p class="mt-3 text-sm font-semibold leading-6 text-white/72">The copilot reads curated destination facts, live POIs, incident reports, and fare state to answer the real tourist question: “I arrived. What now?”</p>
+              <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">01</span><p class="mt-2 text-sm font-black">Exit guidance</p><small class="text-white/60">Which gate, pier, or stop to use.</small></div>
+                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">02</span><p class="mt-2 text-sm font-black">Local context</p><small class="text-white/60">Food, etiquette, safety, opening hints.</small></div>
+                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">03</span><p class="mt-2 text-sm font-black">Fare proof</p><small class="text-white/60">Why this scan costs what it costs.</small></div>
+              </div>
+            </article>
+            <article class="rounded-[2rem] bg-white p-5 shadow-card lg:p-7">
+              <div class="flex items-start gap-3">
+                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-transit-mint text-xl font-black text-transit-teal">AI</div>
+                <div>
+                  <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">RAG answer preview</p>
+                  <h3 class="mt-1 text-2xl font-black">Wat Arun arrival brief</h3>
+                </div>
+              </div>
+              <div id="aiBrief" class="mt-5 space-y-3 text-sm font-bold leading-6 text-slate-600">
+                <p class="rounded-3xl bg-slate-50 p-4">Use Tha Tien pier, cross toward the temple entrance, keep shoulders/knees covered, and save the live QR for the next scan.</p>
+                <p class="rounded-3xl bg-amber-50 p-4 text-amber-800">Current fare session: cap protected. If a staff member scans you again, confirm only the remaining amount before payment.</p>
+              </div>
+              <button id="askAiRouteBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white">Ask Sawasdee AI about this stop</button>
+            </article>
+          </div>
+        </section>
+
         <section id="explore" class="px-5 py-6 lg:px-10">
           <div class="mb-5 flex items-end justify-between gap-4">
             <div>
@@ -257,7 +286,7 @@
           <div class="mb-5">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="wowFactor">The wow factor</p>
             <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="ticketTitle">3D Holographic Joint Ticket</h2>
-            <p id="ticketGuide" class="mt-2 text-sm font-bold leading-6 text-slate-500">Sign in once, issue a Thai Go-style day pass, then let the Joint Ticket cap protect every connected scan across EV bus, boat, and rail.</p>
+            <p id="ticketGuide" class="mt-2 text-sm font-bold leading-6 text-slate-500">Sign in once, issue a destination day pass, then let the Fair-Fare cap protect every connected scan across EV bus, boat, and rail.</p>
           </div>
 
           <form id="ticketForm" class="mb-5 grid gap-3 rounded-[2rem] bg-white p-4 shadow-card lg:grid-cols-[1fr_1fr_auto]">
@@ -274,7 +303,7 @@
               <section class="ticket-face holo-card absolute inset-0 rounded-[1.75rem] p-6 text-white shadow-soft">
                 <div class="relative z-10 flex h-full flex-col justify-between">
                   <div class="flex items-start justify-between">
-                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-white/70">Sawasdee Transit</p><h3 class="mt-2 text-2xl font-black">Thai Go Joint Day Pass</h3></div>
+                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-white/70">Sawasdee Transit</p><h3 class="mt-2 text-2xl font-black">Fair-Fare Day Pass</h3></div>
                     <span id="ticketStatus" class="rounded-full bg-white/16 px-3 py-2 text-xs font-black backdrop-blur">READY</span>
                   </div>
                   <div>
@@ -299,6 +328,7 @@
             </div>
           </div>
           <button id="tapToUseBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 text-base font-black text-white shadow-card lg:mx-auto lg:block lg:max-w-xl">Tap to Use</button>
+          <button id="simulateScanBtn" class="mt-3 w-full rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 text-base font-black text-white shadow-card lg:mx-auto lg:block lg:max-w-xl">Simulate staff scan and payment</button>
           <div class="mt-4 rounded-[1.5rem] bg-white p-4 text-center font-black text-slate-600 shadow-card lg:mx-auto lg:max-w-xl">Today's Rides: <span id="ticketRides" class="text-transit-blue">0</span><span class="mx-2 text-slate-300">|</span>Total Billed: <span class="text-transit-teal"><span id="ticketBilled">0</span>/45 THB Cap</span></div>
         </section>
 
@@ -357,6 +387,23 @@
       <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Sawasdee AI Copilot</p><h3 class="mt-1 text-2xl font-black">Need a local tip?</h3></div><button id="closeSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button></div>
       <div id="chatLog" class="mt-5 max-h-72 space-y-3 overflow-y-auto"><div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">Need a local tip? Ask Sawasdee AI about routes, etiquette, food spots, or fare safety.</div></div>
       <form id="chatForm" class="mt-4 flex gap-2"><input id="chatInput" class="min-h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none" placeholder="Ask Sawasdee AI..." /><button class="rounded-2xl bg-transit-ink px-5 font-black text-white">Send</button></form>
+    </aside>
+
+    <aside id="paymentSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
+      <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
+      <div class="flex items-start justify-between gap-4">
+        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Operator scan</p><h3 class="mt-1 text-2xl font-black">Confirm fare charge</h3></div>
+        <button id="closePaymentSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button>
+      </div>
+      <div class="mt-5 rounded-3xl bg-slate-50 p-4">
+        <div class="flex justify-between text-sm font-bold text-slate-500"><span>Operator</span><span id="paymentOperator">EV feeder gate</span></div>
+        <div class="mt-3 flex justify-between text-sm font-bold text-slate-500"><span>Raw fare</span><span id="paymentRawFare">17 THB</span></div>
+        <div class="mt-3 flex justify-between text-sm font-bold text-slate-500"><span>Already billed today</span><span id="paymentAlready">0 THB</span></div>
+        <div class="mt-4 rounded-2xl bg-amber-100 px-4 py-3 text-sm font-black text-amber-800">Fair-Fare cap checks remaining charge before payment.</div>
+        <div class="mt-4 flex items-end justify-between"><span class="font-black">Confirm charge</span><span id="paymentCharge" class="text-4xl font-black text-transit-teal">17 THB</span></div>
+      </div>
+      <button id="confirmPaymentBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white">Confirm and pay</button>
+      <p id="paymentMessage" class="mt-3 text-sm font-bold text-slate-500"></p>
     </aside>
 
     <aside id="reportSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92vh] max-w-3xl overflow-y-auto rounded-t-[2rem] bg-white p-5 shadow-2xl lg:rounded-[2rem]">

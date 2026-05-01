@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     tat_api_key: str | None = None
     tat_api_base_url: str = "https://tatdataapi.io/api/v2"
     openai_api_key: str | None = None
+    gemini_api_key: str | None = None
     google_api_key: str | None = None
     maptiler_key: str | None = None
     mapbox_token: str | None = None

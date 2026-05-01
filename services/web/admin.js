@@ -137,6 +137,8 @@ function renderDetail(report) {
 }
 
 function renderTicket(ticket) {
+  const nextRawFare = ticket.rides_count % 3 === 0 ? 17 : ticket.rides_count % 3 === 1 ? 21 : 32;
+  const nextCharge = Math.min(nextRawFare, Math.max(0, 45 - ticket.accumulated_fare_thb));
   return `
     <article class="ops-ticket">
       <img src="/api/tickets/${ticket.id}/qr.svg" alt="Ticket QR" />
@@ -144,10 +146,12 @@ function renderTicket(ticket) {
         <p class="chip">${ticket.status}</p>
         <h3>${escapeHtml(ticket.holder_name)}</h3>
         <p class="meta">${escapeHtml(ticket.origin)} to ${escapeHtml(ticket.destination)}</p>
+        <p class="meta">Next scan: raw ${nextRawFare} THB, charge ${nextCharge} THB after cap</p>
       </div>
       <div class="ops-ticket-fare">
         <strong>${ticket.accumulated_fare_thb}/45 THB</strong>
         <span>${ticket.rides_count} rides</span>
+        <button class="button secondary compact validate-ticket" data-id="${ticket.id}" data-fare="${nextRawFare}">Validate scan</button>
       </div>
     </article>
   `;
@@ -196,4 +200,20 @@ list.addEventListener("click", async (event) => {
 statusFilter.addEventListener("change", loadAll);
 categoryFilter.addEventListener("change", loadAll);
 refresh.addEventListener("click", loadAll);
+ticketList.addEventListener("click", async (event) => {
+  const button = event.target.closest(".validate-ticket");
+  if (!button) return;
+  button.disabled = true;
+  button.textContent = "Validating...";
+  await fetch(`/api/tickets/${button.dataset.id}/tap`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mode: "bus",
+      station_name: "Operator console scan",
+      fare_thb: Number(button.dataset.fare),
+    }),
+  });
+  await loadAll();
+});
 loadAll();
