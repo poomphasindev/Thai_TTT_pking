@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sawasdee Transit</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link href="https://unpkg.com/maplibre-gl@^5.12.0/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
+    <script src="https://unpkg.com/maplibre-gl@^5.12.0/dist/maplibre-gl.js"></script>
   </head>
   <body class="app-page thai-go-shell">
     <header class="app-header">
@@ -13,42 +15,47 @@
         <span class="brand-mark">ST</span>
         <span>
           <strong>Sawasdee Transit</strong>
-          <small>Bangkok tourist mobility</small>
+          <small data-i18n="brand_subtitle">Bangkok tourist mobility</small>
         </span>
       </a>
       <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="#plan">Route</a>
-        <a href="#ticket">Pass</a>
-        <a href="#report">Report</a>
+        <a href="#plan" data-i18n="nav_route">Route</a>
+        <a href="#explore" data-i18n="nav_explore">Explore</a>
+        <a href="#ticket" data-i18n="nav_ticket">Pass</a>
+        <a href="#report" data-i18n="nav_report">Report</a>
         <a href="/admin.html">Ops</a>
       </nav>
+      <button id="languageToggle" class="language-toggle" type="button">EN</button>
     </header>
 
     <main id="home">
-      <section class="tourism-hero">
-        <div class="hero-media" aria-label="Wat Arun and Chao Phraya River">
-          <img src="/assets/wat-arun-hero.jpg" alt="Wat Arun by the Chao Phraya River" />
+      <section class="tourism-hero v2-hero">
+        <div class="hero-media curated-hero" aria-label="Bangkok tourism hero">
+          <picture>
+            <source srcset="/assets/generated/bangkok-brochure-en-cover.jpg" media="(min-width: 720px)" />
+            <img src="/assets/generated/bangkok-brochure-th-cover.jpg" alt="Bangkok tourism brochure cover" />
+          </picture>
           <div class="hero-gradient"></div>
           <div class="hero-floating-card">
-            <span>ตั๋วร่วม Tourist Pass</span>
-            <strong>45 THB cap</strong>
-            <small>Rail + bus + boat demo</small>
+            <span data-i18n="hero_badge">Bangkok-only pilot</span>
+            <strong>45 THB</strong>
+            <small data-i18n="hero_cap_note">Joint Ticket cap simulation</small>
           </div>
         </div>
         <div class="hero-copy gov-card">
-          <p class="eyebrow">Official-feeling tourist transit</p>
-          <h1>เที่ยวกรุงเทพฯ แบบรู้ทาง รู้ราคา และใช้บัตรเดียวจบ</h1>
-          <p class="hero-text">
-            รวม route planner สำหรับแลนด์มาร์ก, ตั๋วร่วม QR ที่จำลอง fare cap และระบบแจ้งปัญหาเมืองสำหรับนักท่องเที่ยวใน flow เดียว
+          <p class="eyebrow" data-i18n="hero_eyebrow">Tourism-grade transit OS</p>
+          <h1 data-i18n="hero_title">เที่ยวกรุงเทพฯ แบบรู้ทาง รู้ราคา และใช้บัตรเดียวจบ</h1>
+          <p class="hero-text" data-i18n="hero_body">
+            Landmark-first routing, curated Bangkok POIs, fare-cap simulation, and manual-first incident reporting for tourists.
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="#plan">ค้นหาเส้นทาง</a>
-            <a class="button secondary" href="#ticket">เปิดบัตรเดินทาง</a>
+            <a class="button primary" href="#plan" data-i18n="hero_cta_route">ค้นหาเส้นทาง</a>
+            <a class="button secondary" href="#ticket" data-i18n="hero_cta_ticket">เปิดบัตรเดินทาง</a>
           </div>
           <div class="hero-metrics">
-            <div><strong>8-45</strong><span>บาท fare cap</span></div>
-            <div><strong>3</strong><span>โหมดหลัก</span></div>
-            <div><strong>24h</strong><span>tourist pass</span></div>
+            <div><strong>18</strong><span data-i18n="metric_landmarks">Bangkok landmarks</span></div>
+            <div><strong>3</strong><span data-i18n="metric_modes">Transit modes</span></div>
+            <div><strong>24h</strong><span data-i18n="metric_pass">Tourist pass</span></div>
           </div>
         </div>
       </section>
@@ -57,104 +64,94 @@
         <section id="plan" class="route-screen">
           <div class="route-top">
             <div class="route-toolbar">
-              <a class="back-pill" href="#home" aria-label="Back to top">‹ กลับ</a>
+              <a class="back-pill" href="#home" data-i18n="back">‹ กลับ</a>
               <div>
-                <p class="eyebrow">Smart route</p>
-                <h2>ผลการค้นหาเส้นทาง</h2>
+                <p class="eyebrow" data-i18n="smart_route">Smart route</p>
+                <h2 data-i18n="route_title">ผลการค้นหาเส้นทาง</h2>
               </div>
               <span class="mini-logo">ST</span>
             </div>
 
             <div class="route-search-card">
               <label>
-                จาก
-                <select id="routeOrigin">
-                  <option value="Nana" data-code="BTS E3">นานา</option>
-                  <option value="Siam" data-code="BTS CEN">สยาม</option>
-                  <option value="Suvarnabhumi Airport" data-code="ARL A1">สนามบินสุวรรณภูมิ</option>
-                  <option value="Asok" data-code="BTS E4">อโศก</option>
-                </select>
+                <span data-i18n="from">จาก</span>
+                <select id="routeOrigin"></select>
               </label>
               <button class="swap-button" id="swapRoute" type="button" aria-label="Swap route">⇄</button>
               <label>
-                ถึง
-                <select id="routeDestination">
-                  <option value="Wat Mangkon" data-code="MRT BL29">วัดมังกร</option>
-                  <option value="Wat Arun" data-code="Pier N8">วัดอรุณ</option>
-                  <option value="Grand Palace" data-code="Pier N9">พระบรมมหาราชวัง</option>
-                  <option value="ICONSIAM" data-code="Pier CAT">ไอคอนสยาม</option>
-                </select>
+                <span data-i18n="to">ถึง</span>
+                <select id="routeDestination"></select>
               </label>
-              <button class="button light" id="simulateRoute" type="button">คำนวณเส้นทาง</button>
+              <button class="button light" id="simulateRoute" type="button" data-i18n="calculate_route">คำนวณเส้นทาง</button>
             </div>
 
             <div class="station-banner">
               <div>
-                <span>จาก</span>
-                <strong id="originName">นานา</strong>
-                <p><b>BTS</b> <em>E3</em></p>
+                <span data-i18n="from">จาก</span>
+                <strong id="originName">สยาม</strong>
+                <p id="originNode"><b>BTS</b> <em>CEN</em></p>
               </div>
               <div>
-                <span>ถึง</span>
-                <strong id="destinationName">วัดมังกร</strong>
-                <p><b class="mrt">MRT</b> <em>BL29</em></p>
+                <span data-i18n="to">ถึง</span>
+                <strong id="destinationName">วัดอรุณ</strong>
+                <p id="destinationNode"><b class="boat">BOAT</b> <em>N8</em></p>
               </div>
             </div>
           </div>
 
           <div class="route-sheet">
             <div class="recommend-head">
-              <h3>เส้นทางแนะนำ</h3>
-              <span>Landmark-first planner</span>
+              <h3 data-i18n="recommended">เส้นทางแนะนำ</h3>
+              <span data-i18n="route_disclaimer">Fare and time are pitch-safe simulations</span>
             </div>
 
-            <div class="recommend-grid" id="recommendGrid">
-              <button class="recommend-card active" data-route-index="0" type="button">
-                <span>ถูกที่สุด</span>
-                <strong>49 บาท</strong>
-                <small>20 นาที · 9 สถานี</small>
-              </button>
-              <button class="recommend-card" data-route-index="1" type="button">
-                <span>เร็วที่สุด</span>
-                <strong>45 บาท</strong>
-                <small>18 นาที · 10 สถานี</small>
-              </button>
-              <button class="recommend-card" data-route-index="2" type="button">
-                <span>เที่ยวสวยสุด</span>
-                <strong>45 บาท</strong>
-                <small>42 นาที · boat view</small>
-              </button>
-            </div>
-
-            <div class="route-summary-strip" id="routeSummaryStrip">
-              <div><strong>49</strong><span>บาท</span></div>
-              <div><strong>~20</strong><span>นาที</span></div>
-              <div><strong>9</strong><span>สถานี</span></div>
-            </div>
+            <div class="recommend-grid" id="recommendGrid"></div>
+            <div class="route-summary-strip" id="routeSummaryStrip"></div>
 
             <div class="all-routes">
               <div class="subhead-row">
-                <h3>เส้นทางทั้งหมด</h3>
-                <p>* เวลาโดยประมาณ ไม่รวมเวลารอรถไฟฟ้า/เรือ</p>
+                <h3 data-i18n="all_routes">เส้นทางทั้งหมด</h3>
+                <p data-i18n="time_note">* เวลาโดยประมาณ ไม่รวมเวลารอรถ/เรือ</p>
               </div>
               <div id="routeList" class="route-list-dense"></div>
             </div>
 
             <div class="route-detail-panel">
               <div class="subhead-row">
-                <h3>รายละเอียดเส้นทาง</h3>
-                <button class="button secondary compact" id="copyRoute" type="button">คัดลอกสรุป</button>
+                <h3 data-i18n="route_detail">รายละเอียดเส้นทาง</h3>
+                <button class="button secondary compact" id="copyRoute" type="button" data-i18n="copy_summary">คัดลอกสรุป</button>
               </div>
               <div id="routeDetail" class="route-detail"></div>
             </div>
           </div>
         </section>
 
+        <section id="explore" class="surface explore-zone">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow" data-i18n="explore_eyebrow">Explore around destination</p>
+              <h2 id="exploreTitle">Wat Arun area</h2>
+            </div>
+            <span class="live-pill">MapLibre</span>
+          </div>
+          <div class="map-shell">
+            <div id="map"></div>
+            <div class="map-fallback">
+              <img src="/assets/generated/bangkok-map-preview.jpg" alt="Bangkok tourism map preview" />
+            </div>
+            <div class="map-legend">
+              <span data-i18n="map_legend">Live map with local fallback</span>
+              <strong id="mapFocus">13.7437, 100.4889</strong>
+            </div>
+          </div>
+          <div class="poi-carousel no-scrollbar" id="poiCarousel"></div>
+        </section>
+
         <section id="ticket" class="surface premium-ticket-zone">
           <div class="section-head">
             <div>
-              <p class="eyebrow">Digital joint ticket</p>
-              <h2>บัตรเดินทาง QR แบบแตะใช้จริง</h2>
+              <p class="eyebrow" data-i18n="ticket_eyebrow">Digital joint ticket</p>
+              <h2 data-i18n="ticket_title">บัตรเดินทาง QR แบบแตะใช้จริง</h2>
             </div>
             <button class="button secondary compact" id="refreshTicket" type="button">Refresh</button>
           </div>
@@ -162,26 +159,26 @@
           <div class="ticket-layout refined">
             <form id="ticketForm" class="pass-form">
               <label>
-                Passenger name
+                <span data-i18n="passenger_name">Passenger name</span>
                 <input name="holder_name" value="Poom Tourist" maxlength="120" required />
               </label>
               <div class="grid-2">
                 <label>
-                  Origin
-                  <input name="origin" value="Nana" maxlength="160" required />
+                  <span data-i18n="origin">Origin</span>
+                  <input name="origin" id="ticketOriginInput" value="Siam" maxlength="160" required />
                 </label>
                 <label>
-                  Destination
-                  <input name="destination" value="Wat Mangkon" maxlength="160" required />
+                  <span data-i18n="destination">Destination</span>
+                  <input name="destination" id="ticketDestinationInput" value="Wat Arun" maxlength="160" required />
                 </label>
               </div>
               <input name="pass_type" type="hidden" value="tourist_day_pass" />
-              <button class="button primary" type="submit">ออกบัตรตั๋วร่วม</button>
+              <button class="button primary" type="submit" data-i18n="issue_pass">ออกบัตรตั๋วร่วม</button>
               <p id="ticketMessage" class="message" role="status"></p>
             </form>
 
             <article class="pass-device" id="ticketCard">
-              <button class="pass-flip-button" id="flipTicket" type="button">แตะเพื่อแสดง QR</button>
+              <button class="pass-flip-button" id="flipTicket" type="button" data-i18n="show_qr">แตะเพื่อแสดง QR</button>
               <div class="pass-card-inner" id="passCardInner">
                 <section class="pass-face pass-front">
                   <div class="pass-topline">
@@ -192,9 +189,9 @@
                   <h3>Tourist Joint Pass</h3>
                   <p id="ticketHolder">-</p>
                   <div class="pass-route">
-                    <span id="passOrigin">Nana</span>
+                    <span id="passOrigin">Siam</span>
                     <i></i>
-                    <span id="passDestination">Wat Mangkon</span>
+                    <span id="passDestination">Wat Arun</span>
                   </div>
                   <div class="ticket-meta">
                     <div><span>Used</span><strong><span id="ticketUsed">0</span>/45 THB</strong></div>
@@ -208,7 +205,7 @@
                     <div class="qr-empty" id="qrEmpty">Generate ticket first</div>
                     <img id="ticketQr" alt="Joint ticket QR" hidden />
                   </div>
-                  <p>Show this QR at rail, bus, or boat operator gate.</p>
+                  <p data-i18n="qr_instruction">Show this QR at rail, bus, or boat operator gate.</p>
                 </section>
               </div>
             </article>
@@ -218,7 +215,7 @@
             <div class="section-head inline">
               <div>
                 <p class="eyebrow">Gate simulation</p>
-                <h3>แตะบัตรและคุมค่าโดยสารไม่เกิน 45 บาท</h3>
+                <h3 data-i18n="tap_title">แตะบัตรและคุมค่าโดยสารไม่เกิน 45 บาท</h3>
               </div>
             </div>
             <div class="route-form">
@@ -247,31 +244,58 @@
         <section id="report" class="surface report-zone">
           <div class="section-head">
             <div>
-              <p class="eyebrow">Transparent city feedback</p>
-              <h2>แจ้งปัญหาการเดินทาง</h2>
+              <p class="eyebrow" data-i18n="report_eyebrow">Manual-first incident report</p>
+              <h2 data-i18n="report_title">แจ้งปัญหาการเดินทาง</h2>
             </div>
-            <span class="live-pill">Photo + location</span>
+            <span class="live-pill" data-i18n="report_badge">No AI required</span>
           </div>
 
-          <form id="reportForm" class="form">
-            <label>
-              Category
-              <select name="category" required>
-                <option value="taxi_refusal">Taxi refusal</option>
-                <option value="overpricing">Overpricing</option>
-                <option value="broken_pavement">Broken pavement</option>
-                <option value="unsafe_crossing">Unsafe crossing</option>
-                <option value="unclear_signage">Unclear signage</option>
-                <option value="crowding">Crowding</option>
-                <option value="harassment">Harassment</option>
-                <option value="lost_property">Lost property</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
+          <form id="reportForm" class="form report-form-v2">
+            <div class="grid-2">
+              <label>
+                Category
+                <select name="category" required>
+                  <option value="taxi_refusal">Taxi refusal</option>
+                  <option value="overpricing">Overpricing</option>
+                  <option value="broken_pavement">Broken pavement</option>
+                  <option value="unsafe_crossing">Unsafe crossing</option>
+                  <option value="unclear_signage">Unclear signage</option>
+                  <option value="crowding">Crowding</option>
+                  <option value="harassment">Harassment</option>
+                  <option value="lost_property">Lost property</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label>
+                Transport mode
+                <select name="transport_mode">
+                  <option value="taxi">Taxi</option>
+                  <option value="rail">Rail</option>
+                  <option value="bus">Bus</option>
+                  <option value="boat">Boat</option>
+                  <option value="walk">Walking infrastructure</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>
+                Plate / vehicle / train ID
+                <input name="vehicle_id" placeholder="e.g. 1กข 1234, BTS car no., bus route 40" maxlength="80" />
+              </label>
+              <label>
+                Incident time
+                <div class="inline-input">
+                  <input name="incident_time" id="incidentTime" type="datetime-local" />
+                  <button class="button secondary compact" id="useNow" type="button">Now</button>
+                </div>
+              </label>
+            </div>
 
             <label>
-              Description
-              <textarea name="description" rows="5" minlength="5" maxlength="2000" placeholder="Describe the issue, fare, vehicle, station, or nearby landmark." required></textarea>
+              Location label
+              <input name="location_label" id="locationLabel" placeholder="e.g. Wat Mangkon Exit 1, Yaowarat Road" maxlength="180" />
             </label>
 
             <div class="grid-2">
@@ -288,7 +312,21 @@
             <button class="button secondary" type="button" id="useLocation">Use current location</button>
 
             <label>
-              Photo evidence
+              Severity
+              <select name="severity">
+                <option value="low">Low - inconvenience</option>
+                <option value="medium">Medium - needs follow-up</option>
+                <option value="high">High - safety or scam risk</option>
+              </select>
+            </label>
+
+            <label>
+              Description
+              <textarea name="description" rows="5" minlength="5" maxlength="2000" placeholder="Describe what happened, who was involved, price shown, signage, or visible evidence." required></textarea>
+            </label>
+
+            <label>
+              Optional photo evidence
               <input name="image" type="file" accept="image/jpeg,image/png,image/webp" />
             </label>
 
@@ -311,10 +349,10 @@
     </main>
 
     <nav class="mobile-nav" aria-label="Mobile navigation">
-      <a href="#plan">Route</a>
-      <a href="#ticket">Pass</a>
-      <a href="#report">Report</a>
-      <a href="/admin.html">Ops</a>
+      <a href="#plan" data-i18n="nav_route">Route</a>
+      <a href="#explore" data-i18n="nav_explore">Explore</a>
+      <a href="#ticket" data-i18n="nav_ticket">Pass</a>
+      <a href="#report" data-i18n="nav_report">Report</a>
     </nav>
 
     <script src="/app.js"></script>

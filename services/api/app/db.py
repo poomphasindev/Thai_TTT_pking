@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS reports (
   status TEXT NOT NULL DEFAULT 'submitted',
   reporter_name TEXT,
   contact TEXT,
+  transport_mode TEXT,
+  vehicle_id TEXT,
+  incident_time TEXT,
+  location_label TEXT,
+  severity TEXT,
   ai_category TEXT,
   ai_confidence REAL,
   ai_summary TEXT,
@@ -66,6 +71,7 @@ def init_db() -> None:
     settings.database_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(settings.database_path) as conn:
         conn.executescript(SCHEMA)
+        _ensure_report_columns(conn)
         conn.commit()
 
 
@@ -83,3 +89,17 @@ def get_conn() -> Iterator[sqlite3.Connection]:
 
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def _ensure_report_columns(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(reports)").fetchall()}
+    columns = {
+        "transport_mode": "TEXT",
+        "vehicle_id": "TEXT",
+        "incident_time": "TEXT",
+        "location_label": "TEXT",
+        "severity": "TEXT",
+    }
+    for column, ddl in columns.items():
+        if column not in existing:
+            conn.execute(f"ALTER TABLE reports ADD COLUMN {column} {ddl}")

@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import Response
 
 from app.models import AnalyzeResult, ReportCategory, ReportOut, ReportStatusUpdate
 from app.repositories import reports_repo
@@ -17,6 +18,11 @@ async def create_report(
     longitude: float = Form(..., ge=-180, le=180),
     reporter_name: str | None = Form(None, max_length=120),
     contact: str | None = Form(None, max_length=160),
+    transport_mode: str | None = Form(None, max_length=40),
+    vehicle_id: str | None = Form(None, max_length=80),
+    incident_time: str | None = Form(None, max_length=80),
+    location_label: str | None = Form(None, max_length=180),
+    severity: str | None = Form(None, max_length=40),
     image: UploadFile | None = File(None),
 ) -> ReportOut:
     try:
@@ -33,6 +39,11 @@ async def create_report(
         image_url=image_url,
         reporter_name=reporter_name.strip() if reporter_name else None,
         contact=contact.strip() if contact else None,
+        transport_mode=transport_mode.strip() if transport_mode else None,
+        vehicle_id=vehicle_id.strip() if vehicle_id else None,
+        incident_time=incident_time.strip() if incident_time else None,
+        location_label=location_label.strip() if location_label else None,
+        severity=severity.strip() if severity else None,
     )
 
 
@@ -64,3 +75,10 @@ def analyze_report(report_id: str) -> AnalyzeResult:
         raise HTTPException(status_code=404, detail="Report not found")
     return AnalyzeResult(report_id=report_id)
 
+
+@router.delete("/reports/{report_id}", status_code=204)
+def delete_report(report_id: str) -> Response:
+    deleted = reports_repo.delete(report_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return Response(status_code=204)

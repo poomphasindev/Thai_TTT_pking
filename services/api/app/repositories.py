@@ -7,7 +7,8 @@ from app.models import ReportOut, ReportStatus, utc_now
 
 REPORT_COLUMNS = """
 id, category, description, latitude, longitude, image_url, status,
-reporter_name, contact, ai_category, ai_confidence, ai_summary,
+reporter_name, contact, transport_mode, vehicle_id, incident_time,
+location_label, severity, ai_category, ai_confidence, ai_summary,
 created_at, updated_at
 """
 
@@ -16,6 +17,8 @@ def _row_to_report(row: sqlite3.Row) -> ReportOut:
     payload = dict(row)
     payload["created_at"] = datetime.fromisoformat(payload["created_at"])
     payload["updated_at"] = datetime.fromisoformat(payload["updated_at"])
+    if payload.get("incident_time"):
+        payload["incident_time"] = datetime.fromisoformat(payload["incident_time"])
     return ReportOut(**payload)
 
 
@@ -31,6 +34,11 @@ class ReportRepository:
         image_url: str | None,
         reporter_name: str | None,
         contact: str | None,
+        transport_mode: str | None,
+        vehicle_id: str | None,
+        incident_time: str | None,
+        location_label: str | None,
+        severity: str | None,
     ) -> ReportOut:
         now = utc_now().isoformat()
         with get_conn() as conn:
@@ -38,9 +46,10 @@ class ReportRepository:
                 """
                 INSERT INTO reports (
                   id, category, description, latitude, longitude, image_url,
-                  status, reporter_name, contact, created_at, updated_at
+                  status, reporter_name, contact, transport_mode, vehicle_id,
+                  incident_time, location_label, severity, created_at, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     report_id,
@@ -52,6 +61,11 @@ class ReportRepository:
                     ReportStatus.submitted.value,
                     reporter_name,
                     contact,
+                    transport_mode,
+                    vehicle_id,
+                    incident_time,
+                    location_label,
+                    severity,
                     now,
                     now,
                 ),
@@ -96,6 +110,10 @@ class ReportRepository:
             )
         return self.get(report_id)
 
+    def delete(self, report_id: str) -> bool:
+        with get_conn() as conn:
+            cursor = conn.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+        return cursor.rowcount > 0
+
 
 reports_repo = ReportRepository()
-

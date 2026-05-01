@@ -18,3 +18,8 @@ data/*.json
 data/server.*.log
 
 services/api/data/
+
+# Local research/prototype files
+services/web/assets/*.pdf
+sawasdee-transit-premium-prototype.html
+sawasdee_transit.html

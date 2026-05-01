@@ -34,6 +34,11 @@ class ReportOut(BaseModel):
     status: ReportStatus
     reporter_name: str | None = None
     contact: str | None = None
+    transport_mode: str | None = None
+    vehicle_id: str | None = None
+    incident_time: datetime | None = None
+    location_label: str | None = None
+    severity: str | None = None
     ai_category: str | None = None
     ai_confidence: float | None = None
     ai_summary: str | None = None

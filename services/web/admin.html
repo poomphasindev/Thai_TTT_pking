@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sawasdee Transit Admin</title>
+    <title>Sawasdee Transit Ops</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -13,62 +13,78 @@
         <span class="brand-mark">ST</span>
         <span>
           <strong>Sawasdee Ops</strong>
-          <small>Incident and ticket control</small>
+          <small>Transit trust command center</small>
         </span>
       </a>
       <nav class="desktop-nav" aria-label="Primary navigation">
         <a href="/">App</a>
         <a href="#reports">Reports</a>
         <a href="#tickets">Tickets</a>
+        <a href="#analytics">Analytics</a>
       </nav>
     </header>
 
     <main class="admin-main">
-      <section class="admin-hero">
+      <section class="admin-command-hero">
         <div>
-          <p class="eyebrow">Operations dashboard</p>
-          <h1>City trust command center</h1>
-          <p class="hero-text">Monitor reported issues, fare-cap tickets, and operator actions from one responsive console.</p>
+          <p class="eyebrow">Operations console</p>
+          <h1>Bangkok tourist trust dashboard</h1>
+          <p class="hero-text">Review reports, audit ticket caps, and monitor high-risk areas from one production-style console.</p>
         </div>
-        <button class="button primary compact" id="refresh">Refresh data</button>
+        <div class="ops-actions">
+          <button class="button primary compact" id="refresh">Refresh data</button>
+          <a class="button secondary compact" href="/">Open app</a>
+        </div>
       </section>
 
-      <section class="stats-grid" aria-label="Operational metrics">
-        <article class="stat-card">
-          <span>Open reports</span>
-          <strong id="openReports">0</strong>
-        </article>
-        <article class="stat-card">
-          <span>Resolved</span>
-          <strong id="resolvedReports">0</strong>
-        </article>
-        <article class="stat-card">
-          <span>Active tickets</span>
-          <strong id="activeTickets">0</strong>
-        </article>
-        <article class="stat-card">
-          <span>Fare protected</span>
-          <strong id="fareProtected">0 THB</strong>
-        </article>
+      <section id="analytics" class="stats-grid" aria-label="Operational metrics">
+        <article class="stat-card"><span>Open reports</span><strong id="openReports">0</strong><small>Submitted + reviewing</small></article>
+        <article class="stat-card"><span>High severity</span><strong id="highSeverity">0</strong><small>Needs fast follow-up</small></article>
+        <article class="stat-card"><span>Active tickets</span><strong id="activeTickets">0</strong><small>Last 50 records</small></article>
+        <article class="stat-card"><span>Fare protected</span><strong id="fareProtected">0 THB</strong><small>Current cap usage</small></article>
       </section>
 
-      <section id="reports" class="surface">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Report queue</p>
-            <h2>Incident reports</h2>
+      <section id="reports" class="ops-grid">
+        <div class="surface ops-main">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Report queue</p>
+              <h2>Incident reports</h2>
+            </div>
+            <div class="toolbar ops-toolbar">
+              <select id="statusFilter">
+                <option value="">All statuses</option>
+                <option value="submitted">Submitted</option>
+                <option value="reviewing">Reviewing</option>
+                <option value="resolved">Resolved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <select id="categoryFilter">
+                <option value="">All categories</option>
+                <option value="taxi_refusal">Taxi refusal</option>
+                <option value="overpricing">Overpricing</option>
+                <option value="broken_pavement">Broken pavement</option>
+                <option value="unsafe_crossing">Unsafe crossing</option>
+                <option value="unclear_signage">Unclear signage</option>
+                <option value="crowding">Crowding</option>
+                <option value="harassment">Harassment</option>
+                <option value="lost_property">Lost property</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
-          <div class="toolbar">
-            <select id="statusFilter">
-              <option value="">All statuses</option>
-              <option value="submitted">Submitted</option>
-              <option value="reviewing">Reviewing</option>
-              <option value="resolved">Resolved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
+          <div id="reportList" class="ops-report-list"></div>
         </div>
-        <div id="reportList" class="report-list"></div>
+
+        <aside class="surface detail-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Selected case</p>
+              <h2>Report detail</h2>
+            </div>
+          </div>
+          <div id="reportDetail" class="detail-empty">Select a report to inspect evidence, vehicle ID, location, and timeline.</div>
+        </aside>
       </section>
 
       <section id="tickets" class="surface">
@@ -77,7 +93,7 @@
             <p class="eyebrow">Joint ticket control</p>
             <h2>Recent tickets</h2>
           </div>
-          <a class="button secondary compact" href="/">Create ticket</a>
+          <a class="button secondary compact" href="/#ticket">Create ticket</a>
         </div>
         <div id="ticketList" class="ticket-list"></div>
       </section>

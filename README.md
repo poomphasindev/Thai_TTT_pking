@@ -25,6 +25,8 @@ Working:
 - Real QR SVG generation
 - Tap-in fare-cap simulation
 - Mobile responsive UI
+- TH/EN public app language toggle
+- MapLibre map with local brochure-map fallback
 
 Reserved for next sprint:
 
@@ -32,6 +34,7 @@ Reserved for next sprint:
 - AI route copilot / RAG
 - Vision-based incident analysis
 - Real auth, real payment, and operator validation
+- Production map provider key management
 
 ## Tech Stack
 
@@ -39,6 +42,7 @@ Reserved for next sprint:
 - Runtime DB: SQLite
 - Frontend: Static HTML/CSS/JS served by FastAPI
 - QR generation: `qrcode`
+- Map UI: MapLibre GL JS using a tokenless demo style, with local image fallback
 - Environment management: Conda
 
 ## Repository Layout
@@ -126,6 +130,15 @@ TTM_UPLOAD_DIR=data/uploads
 TTM_PUBLIC_BASE_URL=http://127.0.0.1:8000
 ```
 
+Optional production map/provider keys can be added later:
+
+```env
+TTM_MAPTILER_KEY=
+TTM_MAPBOX_TOKEN=
+TTM_LONGDO_API_KEY=
+TTM_GOOGLE_MAPS_API_KEY=
+```
+
 Notes:
 
 - API keys must never be placed in `services/web/*.js` or HTML.
@@ -167,6 +180,25 @@ Tickets:
 6. Submit an incident report
 7. Open `/admin.html`
 8. Review reports and recent tickets
+
+## Data And Map Strategy
+
+Current implementation:
+
+- Bangkok-only curated landmark dataset in `services/web/app.js`
+- Pitch-safe route templates with realistic ranges for Bangkok tourist trips
+- Fare values are simulation values, not official live operator prices
+- Joint Ticket 45 THB cap is represented as a policy simulation
+- MapLibre renders the map using an external demo style when internet is available
+- Local brochure-map preview is shown as fallback
+
+Recommended production path:
+
+- Tourism POIs: TAT Data API
+- Map renderer: MapLibre GL JS
+- Tile/style provider: MapTiler or Mapbox for reliable production hosting
+- Thailand-first map alternative: Longdo Map API
+- Places/rating fallback: Google Places, only if billing guardrails are configured
 
 ## Security Checklist
 
@@ -250,4 +282,3 @@ See [services/web/assets/ATTRIBUTION.md](./services/web/assets/ATTRIBUTION.md).
 - Do not replace the current FastAPI/static architecture with a large framework unless there is a clear demo or production reason.
 - Keep UI mobile-first.
 - Keep ticketing language as a simulation unless real operator/payment integration is implemented.
-
