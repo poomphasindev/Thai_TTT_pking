@@ -57,6 +57,22 @@ class AnalyzeResult(BaseModel):
     result: dict[str, Any] = Field(default_factory=dict)
 
 
+class CopilotAsk(BaseModel):
+    question: str = Field(min_length=1, max_length=600)
+    language: str = Field(default="en", pattern="^(en|th)$")
+    destination: str = Field(default="Wat Arun", max_length=120)
+    mode: str = Field(default="rail", max_length=40)
+    fare_billed_thb: int = Field(default=0, ge=0, le=45)
+    fare_cap_thb: int = Field(default=45, ge=1, le=300)
+
+
+class CopilotAnswer(BaseModel):
+    answer: str
+    used_model: str
+    fallback: bool = False
+    suggestions: list[str] = Field(default_factory=list)
+
+
 class TicketStatus(StrEnum):
     active = "active"
     expired = "expired"

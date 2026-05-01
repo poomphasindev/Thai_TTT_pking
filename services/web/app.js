@@ -42,6 +42,38 @@ const copy = {
     generateTicket: "Issue my Joint Ticket",
     reportTitle: "Report a transit issue",
     reportBody: "Manual-first reporting with category, place, time, vehicle ID, and photo evidence. Vision AI can be added later without changing this flow.",
+    storyTourismTitle: "EV destination loop",
+    storyTourismBody: "Connect temples, riverfront malls, Yaowarat, and food stops through buses and boats tourists can understand.",
+    storyFareTitle: "8-45 THB Fair-Fare Cap",
+    storyFareBody: "One trip session removes duplicate entry fees and caps connected bus, rail, and boat journeys at 45 THB.",
+    storyPromiseTitle: "Landmark first, mode second",
+    storyPromiseBody: "Visitors choose where they want to go. The app explains what to board, where to transfer, and why the fare is fair.",
+    aiEyebrow: "AI Trip Intelligence",
+    aiTitle: "Your arrival plan, not just a route.",
+    aiBody: "The copilot reads curated destination facts, live POIs, incident reports, and fare state to answer the real tourist question: I arrived. What now?",
+    aiExit: "Exit guidance",
+    aiExitBody: "Which gate, pier, or stop to use.",
+    aiContext: "Local context",
+    aiContextBody: "Food, etiquette, safety, opening hints.",
+    aiFare: "Fare proof",
+    aiFareBody: "Why this scan costs what it costs.",
+    ragPreview: "RAG answer preview",
+    arrivalBriefTitle: "Destination arrival brief",
+    askAiStop: "Ask Sawasdee AI about this stop",
+    simulateScan: "Simulate staff scan and payment",
+    authEyebrow: "Secure demo auth",
+    authTitle: "Create your ticket profile",
+    authBody: "A session cookie links the Fair-Fare pass to a tourist profile. API keys and payment tokens stay server-side in production.",
+    authSubmit: "Sign in and continue",
+    logout: "Sign out",
+    paymentEyebrow: "Operator scan",
+    paymentTitle: "Confirm fare charge",
+    paymentOperatorLabel: "Operator",
+    paymentRawLabel: "Raw fare",
+    paymentBilledLabel: "Already billed today",
+    paymentCapNote: "Fair-Fare cap checks remaining charge before payment.",
+    paymentConfirmLabel: "Confirm charge",
+    confirmPay: "Confirm and pay",
   },
   th: {
     brandSub: "ระบบเดินทางท่องเที่ยวกรุงเทพฯ",
@@ -69,6 +101,38 @@ const copy = {
     generateTicket: "ออกบัตร Fair-Fare",
     reportTitle: "แจ้งปัญหาการเดินทาง",
     reportBody: "แจ้งแบบ manual-first เลือกหมวด ระบุสถานที่ เวลา เลขรถ และแนบรูปได้ ส่วน Vision AI เพิ่มต่อได้โดยไม่เปลี่ยน flow",
+    storyTourismTitle: "วงรอบ EV เชื่อมจุดหมาย",
+    storyTourismBody: "เชื่อมวัด ห้างริมแม่น้ำ เยาวราช และจุดอาหารด้วยรถบัสและเรือที่นักท่องเที่ยวเข้าใจง่าย",
+    storyFareTitle: "เพดานค่าเดินทาง 8-45 บาท",
+    storyFareBody: "หนึ่ง trip session ลดค่าแรกเข้าซ้ำ และคุมรถเมล์ รถไฟฟ้า เรือ ไม่เกิน 45 บาท",
+    storyPromiseTitle: "เลือกแลนด์มาร์กก่อน เลือกโหมดทีหลัง",
+    storyPromiseBody: "ผู้ใช้เลือกว่าจะไปไหน แอพบอกว่าขึ้นอะไร ต่อที่ไหน และทำไมราคานี้ถึงยุติธรรม",
+    aiEyebrow: "AI ช่วยเดินทาง",
+    aiTitle: "ไม่ใช่แค่เส้นทาง แต่คือแผนเมื่อถึงปลายทาง",
+    aiBody: "Copilot อ่านข้อมูลจุดหมาย POI รายงานปัญหา และสถานะค่าโดยสาร เพื่อตอบคำถามจริงของนักท่องเที่ยวว่า ถึงแล้วต้องทำอะไรต่อ",
+    aiExit: "ทางออก/จุดขึ้น",
+    aiExitBody: "ควรใช้ประตู ท่าเรือ หรือป้ายไหน",
+    aiContext: "บริบทท้องถิ่น",
+    aiContextBody: "อาหาร มารยาท ความปลอดภัย เวลาเปิด",
+    aiFare: "เหตุผลค่าโดยสาร",
+    aiFareBody: "สแกนนี้คิดเงินเท่าไร เพราะอะไร",
+    ragPreview: "ตัวอย่างคำตอบ RAG",
+    arrivalBriefTitle: "สรุปเมื่อถึงปลายทาง",
+    askAiStop: "ถาม Sawasdee AI เกี่ยวกับจุดนี้",
+    simulateScan: "จำลองเจ้าหน้าที่สแกนและชำระเงิน",
+    authEyebrow: "ระบบยืนยันตัวตนเดโม",
+    authTitle: "สร้างโปรไฟล์บัตรเดินทาง",
+    authBody: "Session cookie ผูกบัตร Fair-Fare กับโปรไฟล์นักท่องเที่ยว ส่วน API key และ payment token อยู่ฝั่ง server",
+    authSubmit: "เข้าสู่ระบบและไปต่อ",
+    logout: "ออกจากระบบ",
+    paymentEyebrow: "เจ้าหน้าที่สแกน",
+    paymentTitle: "ยืนยันยอดชำระ",
+    paymentOperatorLabel: "ผู้ให้บริการ",
+    paymentRawLabel: "ค่าโดยสารก่อน cap",
+    paymentBilledLabel: "จ่ายแล้ววันนี้",
+    paymentCapNote: "ระบบ Fair-Fare ตรวจยอดที่เหลือก่อนคิดเงิน",
+    paymentConfirmLabel: "ยอดที่ต้องจ่าย",
+    confirmPay: "ยืนยันและชำระเงิน",
   },
 };
 
@@ -134,6 +198,33 @@ const landmarks = [
     context: { en: "Weekend market. Expect heat, crowds, and long walking.", th: "ตลาดสุดสัปดาห์ ควรเผื่ออากาศร้อนและการเดินเยอะ" },
   },
 ];
+
+const accessPlans = {
+  "wat-arun": {
+    en: ["Board: MRT to Sanam Chai or river connector to Tha Tien", "Transfer: cross-river ferry or EV boat stop", "Arrival: Wat Arun pier, walk 3-5 minutes to entrance"],
+    th: ["ขึ้นรถ: MRT สนามไชย หรือเส้นทางต่อท่าเตียน", "ต่อระบบ: เรือข้ามฟากหรือจุดจอดเรือ EV", "ถึงปลายทาง: ท่าวัดอรุณ เดิน 3-5 นาทีถึงทางเข้า"],
+  },
+  "grand-palace": {
+    en: ["Board: MRT Sanam Chai or bus feeder to Rattanakosin", "Transfer: walk via Museum Siam / Tha Chang corridor", "Arrival: Grand Palace gate, check dress code"],
+    th: ["ขึ้นรถ: MRT สนามไชย หรือ feeder เข้ารัตนโกสินทร์", "ต่อระบบ: เดินผ่าน Museum Siam / โซนท่าช้าง", "ถึงปลายทาง: ประตูพระบรมมหาราชวัง ตรวจ dress code"],
+  },
+  yaowarat: {
+    en: ["Board: MRT Blue Line to Wat Mangkon", "Transfer: Exit 1/2 toward Yaowarat Road", "Arrival: walk the food street loop, evening is best"],
+    th: ["ขึ้นรถ: MRT สายสีน้ำเงินไปวัดมังกร", "ต่อระบบ: ใช้ทางออก 1/2 ไปถนนเยาวราช", "ถึงปลายทาง: เดิน loop street food เหมาะช่วงเย็น"],
+  },
+  iconsiam: {
+    en: ["Board: BTS to Krung Thon Buri or boat connector", "Transfer: Gold Line / river pier shuttle", "Arrival: ICONSIAM entrance, indoor fallback in rain"],
+    th: ["ขึ้นรถ: BTS กรุงธนบุรี หรือเรือเชื่อมต่อ", "ต่อระบบ: Gold Line / shuttle ท่าเรือ", "ถึงปลายทาง: ทางเข้าไอคอนสยาม เหมาะเป็นตัวเลือกในวันที่ฝนตก"],
+  },
+  siam: {
+    en: ["Board: BTS to Siam interchange", "Transfer: follow skywalk to malls or BACC", "Arrival: central walking zone, dense but signed"],
+    th: ["ขึ้นรถ: BTS ไปสถานีสยาม", "ต่อระบบ: ใช้ skywalk ไปห้างหรือ BACC", "ถึงปลายทาง: โซนเดินกลางเมือง ป้ายชัดแต่คนหนาแน่น"],
+  },
+  chatuchak: {
+    en: ["Board: BTS Mo Chit or MRT Chatuchak Park", "Transfer: use Kamphaeng Phet for market access", "Arrival: large walking area, save meeting point"],
+    th: ["ขึ้นรถ: BTS หมอชิต หรือ MRT สวนจตุจักร", "ต่อระบบ: ใช้กำแพงเพชรเพื่อเข้าตลาด", "ถึงปลายทาง: พื้นที่ใหญ่มาก ควรบันทึกจุดนัดพบ"],
+  },
+};
 
 const routeModes = {
   rail: {
@@ -212,6 +303,7 @@ function applyLanguage() {
   $("#langToggle").textContent = state.lang === "en" ? "TH" : "EN";
   $$("[data-i18n]").forEach((el) => (el.textContent = t(el.dataset.i18n)));
   fillSelects();
+  renderQuickPrompts();
   renderRoute();
   renderExplore();
 }
@@ -272,6 +364,13 @@ function renderRoute() {
         </div>
       </div>`;
   }).join("");
+
+  const access = accessPlans[dest.id]?.[state.lang] || accessPlans[dest.id]?.en || [];
+  $("#accessPlan").innerHTML = access.map((item, index) => `
+    <div class="rounded-2xl bg-slate-50 p-4">
+      <span class="grid h-8 w-8 place-items-center rounded-full bg-transit-ink text-xs font-black text-white">${index + 1}</span>
+      <p class="mt-3 text-sm font-black leading-6">${escapeHtml(item)}</p>
+    </div>`).join("");
 
   $$(".mode-btn").forEach((button) => {
     const active = button.dataset.mode === state.mode;
@@ -343,7 +442,7 @@ function renderPoiCards(places) {
     return `
       <article data-poi-index="${index}" class="min-w-[260px] cursor-pointer overflow-hidden rounded-[1.75rem] bg-white shadow-card transition hover:-translate-y-1">
         <div class="relative">
-          <img class="h-36 w-full object-cover" src="${image}" alt="${escapeHtml(place.name)}" />
+          ${place.image ? `<img class="h-36 w-full object-cover" src="${image}" alt="${escapeHtml(place.name)}" />` : `<div class="poi-visual grid h-36 place-items-center p-5 text-center text-white"><div><p class="text-xs font-black uppercase tracking-[0.18em] opacity-70">${escapeHtml(place.kind || state.placeCategory)}</p><p class="mt-2 text-2xl font-black">${index === 0 ? "Destination" : `Place ${index}`}</p></div></div>`}
           <span class="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-transit-ink text-sm font-black text-white shadow-card">${index === 0 ? "★" : index}</span>
         </div>
         <div class="p-4">
@@ -421,6 +520,7 @@ function wireEvents() {
     renderRoute();
     renderExplore();
   });
+  $("#lostHelpBtn").addEventListener("click", () => askSuggested(state.lang === "th" ? "ฉันหลงทางระหว่างต่อรถ ควรทำยังไง?" : "I am lost during transfer. What should I do?"));
   $("#planRouteBtn").addEventListener("click", () => {
     $("#farePanel").classList.remove("hidden");
     $("#fareChevron").classList.add("rotate-180");
@@ -453,9 +553,11 @@ function wireEvents() {
   $("#closePaymentSheet").addEventListener("click", closeSheets);
   $("#confirmPaymentBtn").addEventListener("click", confirmPayment);
   $("#askAiRouteBtn").addEventListener("click", () => {
-    openAiSheet();
-    $("#chatInput").value = `Give me an arrival brief for ${localName(currentDestination())}`;
-    $("#chatInput").focus();
+    askSuggested(state.lang === "th" ? `สรุปเมื่อถึง ${localName(currentDestination())} ให้หน่อย` : `Give me an arrival brief for ${localName(currentDestination())}`);
+  });
+  $("#quickPrompts").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-prompt]");
+    if (button) askSuggested(button.dataset.prompt);
   });
 
   $("#authButton").addEventListener("click", openAuthSheet);
@@ -479,6 +581,10 @@ function wireEvents() {
   $("#closeSheet").addEventListener("click", closeSheets);
   $("#sheetOverlay").addEventListener("click", closeSheets);
   $("#chatForm").addEventListener("submit", sendChat);
+  $("#chatLog").addEventListener("click", (event) => {
+    const button = event.target.closest(".suggestion");
+    if (button) askSuggested(button.dataset.prompt);
+  });
 }
 
 async function loadMe() {
@@ -495,6 +601,10 @@ function renderAuthState() {
   $("#authButton").textContent = label;
   $("#authMessage").textContent = state.user ? `Signed in as ${state.user.email}` : "";
   $("#logoutBtn").classList.toggle("hidden", !state.user);
+  if (state.user) {
+    $("#ticketHolderInput").value = state.user.display_name;
+    $("#ticketHolder").textContent = state.user.display_name;
+  }
 }
 
 async function submitAuth(event) {
@@ -595,10 +705,18 @@ async function confirmPayment() {
     });
     renderTicket(result.ticket);
     $("#paymentMessage").textContent = `Paid ${result.tap.charged_thb} THB. Saved ${result.saved_thb} THB from the cap.`;
+    resetTicketView();
     setTimeout(closeSheets, 900);
   } catch (error) {
     $("#paymentMessage").textContent = error.message;
   }
+}
+
+function resetTicketView() {
+  const shell = document.querySelector(".ticket-shell");
+  shell.classList.remove("flipped");
+  $("#tapToUseBtn").textContent = state.lang === "th" ? "แตะเพื่อใช้บัตร" : "Tap to Use";
+  state.countdownSeconds = 299;
 }
 
 async function submitReport(event) {
@@ -660,18 +778,59 @@ function closeSheets(hideOverlay = true) {
   }
 }
 
-function sendChat(event) {
+async function sendChat(event) {
   event.preventDefault();
   const input = $("#chatInput");
   const value = input.value.trim();
   if (!value) return;
   $("#chatLog").insertAdjacentHTML("beforeend", `<div class="ml-auto max-w-[86%] rounded-3xl rounded-br-md bg-transit-teal px-4 py-3 text-sm font-semibold leading-6 text-white">${escapeHtml(value)}</div>`);
   input.value = "";
-  setTimeout(() => {
-    const mode = routeModes[state.mode];
-    $("#chatLog").insertAdjacentHTML("beforeend", `<div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">For this Bangkok pilot, I recommend ${mode.title.en}. Start at ${currentOrigin().node}, keep the Joint Ticket QR ready, and your daily billing stays within the 45 THB cap simulation.</div>`);
-    $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
-  }, 360);
+  $("#chatLog").insertAdjacentHTML("beforeend", `<div id="typingBubble" class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-500">Thinking with route context...</div>`);
+  $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
+  try {
+    const answer = await request("/api/copilot/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(copilotPayload(value)),
+    });
+    $("#typingBubble").remove();
+    appendAiAnswer(answer.answer, answer.suggestions);
+  } catch (error) {
+    $("#typingBubble").remove();
+    appendAiAnswer(error.message, []);
+  }
+}
+
+function copilotPayload(question) {
+  return {
+    question,
+    language: state.lang,
+    destination: currentDestination().en,
+    mode: state.mode,
+    fare_billed_thb: state.activeTicket?.accumulated_fare_thb || 0,
+    fare_cap_thb: state.activeTicket?.fare_cap_thb || 45,
+  };
+}
+
+function appendAiAnswer(answer, suggestionsList) {
+  $("#chatLog").insertAdjacentHTML("beforeend", `<div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">${escapeHtml(answer).replace(/\n/g, "<br>")}</div>`);
+  if (suggestionsList?.length) {
+    $("#chatLog").insertAdjacentHTML("beforeend", `<div class="flex max-w-[92%] flex-wrap gap-2">${suggestionsList.map((item) => `<button class="suggestion rounded-full bg-white px-3 py-2 text-xs font-black text-transit-teal shadow-sm" data-prompt="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("")}</div>`);
+  }
+  $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
+}
+
+function askSuggested(prompt) {
+  openAiSheet();
+  $("#chatInput").value = prompt;
+  $("#chatForm").requestSubmit();
+}
+
+function renderQuickPrompts() {
+  const prompts = state.lang === "th"
+    ? ["ต้องสแกน QR ตรงไหน?", "ถ้าฉันแวะกลางทางจะคิดเงินยังไง?", "ถึงปลายทางแล้วออกทางไหน?"]
+    : ["Where do I scan QR?", "If I stop midway, how is fare charged?", "Which exit should I use after arrival?"];
+  $("#quickPrompts").innerHTML = prompts.map((prompt) => `<button data-prompt="${escapeHtml(prompt)}" class="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-600">${escapeHtml(prompt)}</button>`).join("");
 }
 
 function escapeHtml(value) {

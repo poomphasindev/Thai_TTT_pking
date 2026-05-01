@@ -91,6 +91,7 @@
       #map { height: 100%; min-height: 20rem; width: 100%; }
       .map-marker { cursor: pointer; display: grid; width: 2rem; height: 2rem; place-items: center; border: 3px solid #fff; border-radius: 999px; color: #fff; background: #05866f; font-weight: 900; box-shadow: 0 10px 22px rgba(15,31,46,.3); }
       .map-marker.active { width: 2.5rem; height: 2.5rem; background: #f26b5b; }
+      .poi-visual { background: linear-gradient(135deg, #0f1f2e, #05866f); }
     </style>
   </head>
 
@@ -162,18 +163,18 @@
             <div class="grid gap-3 lg:grid-cols-3">
               <article class="rounded-[1.5rem] bg-transit-ink p-5 text-white shadow-card">
                 <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-gold">Tourism layer</p>
-                <h3 class="mt-2 text-xl font-black">EV destination loop</h3>
-                <p class="mt-2 text-sm font-semibold leading-6 text-white/72">Connect temples, riverfront malls, Yaowarat, and workshop/food stops through buses and boats tourists can understand.</p>
+                <h3 class="mt-2 text-xl font-black" data-i18n="storyTourismTitle">EV destination loop</h3>
+                <p class="mt-2 text-sm font-semibold leading-6 text-white/72" data-i18n="storyTourismBody">Connect temples, riverfront malls, Yaowarat, and workshop/food stops through buses and boats tourists can understand.</p>
               </article>
               <article class="rounded-[1.5rem] bg-white p-5 shadow-card">
                 <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Public policy layer</p>
-                <h3 class="mt-2 text-xl font-black">8-45 THB Fair-Fare Cap</h3>
-                <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">One trip session removes duplicate entry fees and caps connected bus, rail, and boat journeys at 45 THB.</p>
+                <h3 class="mt-2 text-xl font-black" data-i18n="storyFareTitle">8-45 THB Fair-Fare Cap</h3>
+                <p class="mt-2 text-sm font-semibold leading-6 text-slate-500" data-i18n="storyFareBody">One trip session removes duplicate entry fees and caps connected bus, rail, and boat journeys at 45 THB.</p>
               </article>
               <article class="rounded-[1.5rem] bg-transit-mint p-5 shadow-card">
                 <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Product promise</p>
-                <h3 class="mt-2 text-xl font-black">Landmark first, mode second</h3>
-                <p class="mt-2 text-sm font-semibold leading-6 text-transit-teal/75">Visitors choose where they want to go. The app explains what to board, where to transfer, and why the fare is fair.</p>
+                <h3 class="mt-2 text-xl font-black" data-i18n="storyPromiseTitle">Landmark first, mode second</h3>
+                <p class="mt-2 text-sm font-semibold leading-6 text-transit-teal/75" data-i18n="storyPromiseBody">Visitors choose where they want to go. The app explains what to board, where to transfer, and why the fare is fair.</p>
               </article>
             </div>
           </div>
@@ -220,6 +221,13 @@
                   </div>
                   <div id="routeSteps" class="space-y-3"></div>
                 </div>
+                <div class="mt-5 rounded-3xl bg-white p-4 ring-1 ring-slate-100">
+                  <div class="flex items-center justify-between gap-3">
+                    <div><p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Journey control</p><h3 class="mt-1 font-black">Scan, transfer, recover</h3></div>
+                    <button id="lostHelpBtn" class="rounded-full bg-amber-100 px-4 py-2 text-xs font-black text-amber-800">I'm lost</button>
+                  </div>
+                  <div id="accessPlan" class="mt-4 grid gap-3 lg:grid-cols-3"></div>
+                </div>
               </div>
             </article>
           </div>
@@ -228,28 +236,29 @@
         <section id="ai-trip" class="px-5 py-6 lg:px-10">
           <div class="grid gap-4 lg:grid-cols-[1.05fr_.95fr]">
             <article class="rounded-[2rem] bg-transit-ink p-5 text-white shadow-card lg:p-7">
-              <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-gold">AI Trip Intelligence</p>
-              <h2 class="mt-2 text-3xl font-black tracking-tight">Your arrival plan, not just a route.</h2>
-              <p class="mt-3 text-sm font-semibold leading-6 text-white/72">The copilot reads curated destination facts, live POIs, incident reports, and fare state to answer the real tourist question: “I arrived. What now?”</p>
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-gold" data-i18n="aiEyebrow">AI Trip Intelligence</p>
+              <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="aiTitle">Your arrival plan, not just a route.</h2>
+              <p class="mt-3 text-sm font-semibold leading-6 text-white/72" data-i18n="aiBody">The copilot reads curated destination facts, live POIs, incident reports, and fare state to answer the real tourist question: “I arrived. What now?”</p>
               <div class="mt-5 grid gap-3 sm:grid-cols-3">
-                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">01</span><p class="mt-2 text-sm font-black">Exit guidance</p><small class="text-white/60">Which gate, pier, or stop to use.</small></div>
-                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">02</span><p class="mt-2 text-sm font-black">Local context</p><small class="text-white/60">Food, etiquette, safety, opening hints.</small></div>
-                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">03</span><p class="mt-2 text-sm font-black">Fare proof</p><small class="text-white/60">Why this scan costs what it costs.</small></div>
+                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">01</span><p class="mt-2 text-sm font-black" data-i18n="aiExit">Exit guidance</p><small class="text-white/60" data-i18n="aiExitBody">Which gate, pier, or stop to use.</small></div>
+                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">02</span><p class="mt-2 text-sm font-black" data-i18n="aiContext">Local context</p><small class="text-white/60" data-i18n="aiContextBody">Food, etiquette, safety, opening hints.</small></div>
+                <div class="rounded-3xl bg-white/10 p-4"><span class="text-2xl">03</span><p class="mt-2 text-sm font-black" data-i18n="aiFare">Fare proof</p><small class="text-white/60" data-i18n="aiFareBody">Why this scan costs what it costs.</small></div>
               </div>
             </article>
             <article class="rounded-[2rem] bg-white p-5 shadow-card lg:p-7">
               <div class="flex items-start gap-3">
                 <div class="grid h-12 w-12 place-items-center rounded-2xl bg-transit-mint text-xl font-black text-transit-teal">AI</div>
                 <div>
-                  <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal">RAG answer preview</p>
-                  <h3 class="mt-1 text-2xl font-black">Wat Arun arrival brief</h3>
+                  <p class="text-xs font-black uppercase tracking-[0.16em] text-transit-teal" data-i18n="ragPreview">RAG answer preview</p>
+                  <h3 class="mt-1 text-2xl font-black" data-i18n="arrivalBriefTitle">Wat Arun arrival brief</h3>
                 </div>
               </div>
               <div id="aiBrief" class="mt-5 space-y-3 text-sm font-bold leading-6 text-slate-600">
                 <p class="rounded-3xl bg-slate-50 p-4">Use Tha Tien pier, cross toward the temple entrance, keep shoulders/knees covered, and save the live QR for the next scan.</p>
                 <p class="rounded-3xl bg-amber-50 p-4 text-amber-800">Current fare session: cap protected. If a staff member scans you again, confirm only the remaining amount before payment.</p>
               </div>
-              <button id="askAiRouteBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white">Ask Sawasdee AI about this stop</button>
+              <div id="quickPrompts" class="mt-5 flex flex-wrap gap-2"></div>
+              <button id="askAiRouteBtn" class="mt-3 w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white" data-i18n="askAiStop">Ask Sawasdee AI about this stop</button>
             </article>
           </div>
         </section>
@@ -290,9 +299,9 @@
           </div>
 
           <form id="ticketForm" class="mb-5 grid gap-3 rounded-[2rem] bg-white p-4 shadow-card lg:grid-cols-[1fr_1fr_auto]">
-            <input name="holder_name" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Poom Tourist" maxlength="120" required />
-            <input name="origin" id="ticketOrigin" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Siam" maxlength="160" required />
-            <input name="destination" id="ticketDestination" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Wat Arun" maxlength="160" required />
+            <input name="holder_name" id="ticketHolderInput" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Poom Tourist" maxlength="120" required readonly />
+            <input name="origin" id="ticketOrigin" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Siam" maxlength="160" required readonly />
+            <input name="destination" id="ticketDestination" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" value="Wat Arun" maxlength="160" required readonly />
             <input name="pass_type" type="hidden" value="tourist_day_pass" />
             <button class="rounded-2xl bg-transit-ink px-5 py-4 font-black text-white lg:col-span-3" data-i18n="generateTicket">Generate ticket</button>
             <p id="ticketMessage" class="text-sm font-bold text-slate-500 lg:col-span-3"></p>
@@ -328,7 +337,7 @@
             </div>
           </div>
           <button id="tapToUseBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 text-base font-black text-white shadow-card lg:mx-auto lg:block lg:max-w-xl">Tap to Use</button>
-          <button id="simulateScanBtn" class="mt-3 w-full rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 text-base font-black text-white shadow-card lg:mx-auto lg:block lg:max-w-xl">Simulate staff scan and payment</button>
+          <button id="simulateScanBtn" class="mt-3 w-full rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 text-base font-black text-white shadow-card lg:mx-auto lg:block lg:max-w-xl" data-i18n="simulateScan">Simulate staff scan and payment</button>
           <div class="mt-4 rounded-[1.5rem] bg-white p-4 text-center font-black text-slate-600 shadow-card lg:mx-auto lg:max-w-xl">Today's Rides: <span id="ticketRides" class="text-transit-blue">0</span><span class="mx-2 text-slate-300">|</span>Total Billed: <span class="text-transit-teal"><span id="ticketBilled">0</span>/45 THB Cap</span></div>
         </section>
 
@@ -369,16 +378,16 @@
     <aside id="authSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
       <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
       <div class="flex items-start justify-between gap-4">
-        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Secure demo auth</p><h3 class="mt-1 text-2xl font-black">Create your ticket profile</h3></div>
+        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="authEyebrow">Secure demo auth</p><h3 class="mt-1 text-2xl font-black" data-i18n="authTitle">Create your ticket profile</h3></div>
         <button id="closeAuthSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button>
       </div>
-      <p class="mt-3 text-sm font-bold leading-6 text-slate-500">A session cookie links the Joint Ticket to a tourist profile. API keys and payment tokens stay server-side in production.</p>
+      <p class="mt-3 text-sm font-bold leading-6 text-slate-500" data-i18n="authBody">A session cookie links the Fair-Fare pass to a tourist profile. API keys and payment tokens stay server-side in production.</p>
       <form id="authForm" class="mt-5 space-y-3">
         <input name="display_name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Display name" value="Poom Tourist" required />
         <input name="email" type="email" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="tourist@example.com" value="poom@example.com" required />
-        <button class="w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white">Sign in and continue</button>
+        <button class="w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white" data-i18n="authSubmit">Sign in and continue</button>
       </form>
-      <button id="logoutBtn" class="mt-3 hidden w-full rounded-2xl bg-slate-100 px-5 py-4 font-black text-slate-600">Sign out</button>
+      <button id="logoutBtn" class="mt-3 hidden w-full rounded-2xl bg-slate-100 px-5 py-4 font-black text-slate-600" data-i18n="logout">Sign out</button>
       <p id="authMessage" class="mt-3 text-sm font-bold text-slate-500"></p>
     </aside>
 
@@ -392,17 +401,17 @@
     <aside id="paymentSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
       <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
       <div class="flex items-start justify-between gap-4">
-        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Operator scan</p><h3 class="mt-1 text-2xl font-black">Confirm fare charge</h3></div>
+        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="paymentEyebrow">Operator scan</p><h3 class="mt-1 text-2xl font-black" data-i18n="paymentTitle">Confirm fare charge</h3></div>
         <button id="closePaymentSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button>
       </div>
       <div class="mt-5 rounded-3xl bg-slate-50 p-4">
-        <div class="flex justify-between text-sm font-bold text-slate-500"><span>Operator</span><span id="paymentOperator">EV feeder gate</span></div>
-        <div class="mt-3 flex justify-between text-sm font-bold text-slate-500"><span>Raw fare</span><span id="paymentRawFare">17 THB</span></div>
-        <div class="mt-3 flex justify-between text-sm font-bold text-slate-500"><span>Already billed today</span><span id="paymentAlready">0 THB</span></div>
-        <div class="mt-4 rounded-2xl bg-amber-100 px-4 py-3 text-sm font-black text-amber-800">Fair-Fare cap checks remaining charge before payment.</div>
-        <div class="mt-4 flex items-end justify-between"><span class="font-black">Confirm charge</span><span id="paymentCharge" class="text-4xl font-black text-transit-teal">17 THB</span></div>
+        <div class="flex justify-between text-sm font-bold text-slate-500"><span data-i18n="paymentOperatorLabel">Operator</span><span id="paymentOperator">EV feeder gate</span></div>
+        <div class="mt-3 flex justify-between text-sm font-bold text-slate-500"><span data-i18n="paymentRawLabel">Raw fare</span><span id="paymentRawFare">17 THB</span></div>
+        <div class="mt-3 flex justify-between text-sm font-bold text-slate-500"><span data-i18n="paymentBilledLabel">Already billed today</span><span id="paymentAlready">0 THB</span></div>
+        <div class="mt-4 rounded-2xl bg-amber-100 px-4 py-3 text-sm font-black text-amber-800" data-i18n="paymentCapNote">Fair-Fare cap checks remaining charge before payment.</div>
+        <div class="mt-4 flex items-end justify-between"><span class="font-black" data-i18n="paymentConfirmLabel">Confirm charge</span><span id="paymentCharge" class="text-4xl font-black text-transit-teal">17 THB</span></div>
       </div>
-      <button id="confirmPaymentBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white">Confirm and pay</button>
+      <button id="confirmPaymentBtn" class="mt-5 w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white" data-i18n="confirmPay">Confirm and pay</button>
       <p id="paymentMessage" class="mt-3 text-sm font-bold text-slate-500"></p>
     </aside>
 

@@ -32,7 +32,9 @@ Working:
 - Numbered POI cards that focus matching map pins and open map popups
 - Product story reframed around destination-first EV tourism loops plus an 8-45 THB fair-fare cap
 - AI Trip Intelligence section showing where RAG fits in the user journey
+- Gemini-backed `/api/copilot/ask` endpoint with domain guard and low-token answers
 - Passenger-side and operator-side payment confirmation simulation
+- Journey control cards for scan, transfer, and lost-passenger recovery
 
 Reserved for next sprint:
 
@@ -156,6 +158,7 @@ Notes:
 - Frontend calls this backend only.
 - Backend already calls tokenless OpenStreetMap Overpass for nearby POIs.
 - Backend should call Google Places, Longdo, MapTiler, Mapbox, TAT, or OpenAI APIs if those providers are enabled later.
+- Gemini copilot uses `TTM_GEMINI_API_KEY`; if that is empty, it can use `TTM_GOOGLE_API_KEY` for Google AI Studio compatibility.
 - Runtime files under `data/` and `services/api/data/` are ignored.
 
 ## Auth Model
@@ -191,6 +194,13 @@ Auth:
 Places:
 
 - `GET /api/places/nearby?lat=13.7437&lng=100.4889&category=food`
+
+Copilot:
+
+- `POST /api/copilot/ask`
+- Uses Gemini when a key is configured
+- Falls back to deterministic guidance if no key or provider error
+- Refuses unrelated questions outside Bangkok tourist mobility, fares, QR ticketing, transfers, safety, and destination guidance
 
 Reports:
 
@@ -265,6 +275,7 @@ In product terms:
 - The Fair-Fare QR becomes the shared validation object.
 - Map cards show nearby verified POIs with numbered pins instead of pretending to have paid Google ratings.
 - AI Trip Intelligence uses destination facts, live POIs, reports, and fare state to answer what tourists should do after arrival.
+- After each simulated payment, the QR view resets to the front of the card and refreshes the live-ticket timer for the next scan.
 
 Recommended production path:
 
