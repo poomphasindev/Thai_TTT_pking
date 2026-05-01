@@ -8,6 +8,7 @@ const state = {
   user: null,
   activeTicketId: localStorage.getItem("activeTicketId"),
   activeTicket: null,
+  activeTrip: null,
   pendingPayment: null,
   map: null,
   markers: [],
@@ -65,6 +66,14 @@ const copy = {
     authTitle: "Create your ticket profile",
     authBody: "A session cookie links the Fair-Fare pass to a tourist profile. API keys and payment tokens stay server-side in production.",
     authSubmit: "Sign in and continue",
+    tripConsoleEyebrow: "Trip test console",
+    tripConsoleTitle: "Scan timeline and wallet proof",
+    tripConsoleBody: "Use this in the pitch to prove each operator scan is stored, capped, then charged from a prepaid wallet.",
+    walletLabel: "Wallet",
+    startTrip: "Start trip session",
+    scanNextLeg: "Scan next leg",
+    endAndPay: "End and pay",
+    noTripYet: "No active trip session yet.",
     logout: "Sign out",
     paymentEyebrow: "Operator scan",
     paymentTitle: "Confirm fare charge",
@@ -140,6 +149,14 @@ const copy = {
     authTitle: "สร้างโปรไฟล์บัตรเดินทาง",
     authBody: "Session cookie ผูกบัตร Fair-Fare กับโปรไฟล์นักท่องเที่ยว ส่วน API key และ payment token อยู่ฝั่ง server",
     authSubmit: "เข้าสู่ระบบและไปต่อ",
+    tripConsoleEyebrow: "คอนโซลทดสอบทริป",
+    tripConsoleTitle: "ไทม์ไลน์สแกนและหลักฐานการหักเงิน",
+    tripConsoleBody: "ใช้ตอน pitch เพื่อพิสูจน์ว่าทุกการสแกนถูกบันทึก คุมเพดาน และหักจาก wallet จริง",
+    walletLabel: "Wallet",
+    startTrip: "เริ่มทริป",
+    scanNextLeg: "สแกนช่วงถัดไป",
+    endAndPay: "จบทริปและชำระเงิน",
+    noTripYet: "ยังไม่มีทริปที่กำลังใช้งาน",
     logout: "ออกจากระบบ",
     paymentEyebrow: "เจ้าหน้าที่สแกน",
     paymentTitle: "ยืนยันยอดชำระ",
@@ -338,6 +355,7 @@ function applyLanguage() {
   renderQuickPrompts();
   renderRoute();
   renderExplore();
+  renderTripSession();
 }
 
 function fillSelects() {
@@ -598,6 +616,9 @@ function wireEvents() {
   $("#simulateScanBtn").addEventListener("click", openPaymentFlow);
   $("#closePaymentSheet").addEventListener("click", closeSheets);
   $("#confirmPaymentBtn").addEventListener("click", confirmPayment);
+  $("#startTripBtn").addEventListener("click", startTripSession);
+  $("#simulateLegBtn").addEventListener("click", simulateNextLeg);
+  $("#endTripBtn").addEventListener("click", endTripSession);
   $("#askAiRouteBtn").addEventListener("click", () => {
     askSuggested(state.lang === "th" ? `สรุปเมื่อถึง ${localName(currentDestination())} ให้หน่อย` : `Give me an arrival brief for ${localName(currentDestination())}`);
   });
@@ -636,16 +657,20 @@ function wireEvents() {
 async function loadMe() {
   try {
     state.user = await request("/api/auth/me");
+    await loadActiveTrip();
   } catch {
     state.user = null;
+    state.activeTrip = null;
   }
   renderAuthState();
+  renderTripSession();
 }
 
 function renderAuthState() {
   const label = state.user ? state.user.display_name.split(" ")[0] : "Sign in";
   $("#authButton").textContent = label;
   $("#authMessage").textContent = state.user ? `Signed in as ${state.user.email}` : "";
+  $("#walletBalance").textContent = state.user ? state.user.balance_thb : "--";
   $("#logoutBtn").classList.toggle("hidden", !state.user);
   if (state.user) {
     $("#ticketHolderInput").value = state.user.display_name;
@@ -663,6 +688,8 @@ async function submitAuth(event) {
       body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget).entries())),
     });
     renderAuthState();
+    await loadActiveTrip();
+    renderTripSession();
     $("#authMessage").textContent = "Ready. You can issue a Joint Ticket now.";
     setTimeout(closeSheets, 450);
   } catch (error) {
@@ -673,7 +700,9 @@ async function submitAuth(event) {
 async function logout() {
   await fetch("/api/auth/logout", { method: "POST" });
   state.user = null;
+  state.activeTrip = null;
   renderAuthState();
+  renderTripSession();
 }
 
 async function submitTicket(event) {
@@ -765,15 +794,163 @@ function resetTicketView() {
   state.countdownSeconds = 299;
 }
 
+async function loadActiveTrip() {
+  if (!state.user) return;
+  try {
+    state.activeTrip = await request("/api/trips/active");
+  } catch {
+    state.activeTrip = null;
+  }
+}
+
+function plannedModesForCurrentRoute() {
+  if (state.mode === "bus") return ["bus", "bus"];
+  if (state.mode === "boat") return ["rail", "boat", "walk"];
+  return ["rail", "bus", "boat"];
+}
+
+function demoLegFor(mode, index) {
+  const dest = currentDestination();
+  const origin = currentOrigin();
+  const byMode = {
+    rail: {
+      mode: "rail",
+      operator_label: "Rail gate validator",
+      vehicle_id: origin.node,
+      stop_label: index === 0 ? `${origin.node} entry` : `${dest.node} exit`,
+      raw_fare_thb: 32,
+    },
+    bus: {
+      mode: "bus",
+      operator_label: "EV feeder bus validator",
+      vehicle_id: `Tourist Feeder ${dest.id.toUpperCase().slice(0, 3)}-${index + 1}`,
+      stop_label: `${localName(dest)} feeder stop`,
+      raw_fare_thb: 16,
+    },
+    boat: {
+      mode: "boat",
+      operator_label: "River pier staff scanner",
+      vehicle_id: "Chao Phraya EV Boat",
+      stop_label: dest.node,
+      raw_fare_thb: 21,
+    },
+    walk: {
+      mode: "walk",
+      operator_label: "Arrival checkpoint",
+      vehicle_id: "No vehicle",
+      stop_label: `${localName(dest)} entrance`,
+      raw_fare_thb: 0,
+    },
+  };
+  return byMode[mode] || byMode.bus;
+}
+
+async function startTripSession() {
+  if (!state.user) {
+    $("#tripStatus").textContent = "Sign in first so the trip can attach to a tourist wallet.";
+    openAuthSheet();
+    return;
+  }
+  if (!state.activeTicket) {
+    $("#tripStatus").textContent = "Issue a ticket first, then start the testable trip session.";
+    return;
+  }
+  const origin = currentOrigin();
+  const dest = currentDestination();
+  $("#tripStatus").textContent = "Starting trip session...";
+  try {
+    state.activeTrip = await request("/api/trips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ticket_id: state.activeTicket.id,
+        origin: origin.en,
+        destination: dest.en,
+        planned_modes: plannedModesForCurrentRoute(),
+        estimated_fare_thb: routeModes[state.mode].total,
+        fare_cap_thb: 45,
+      }),
+    });
+    renderTripSession();
+  } catch (error) {
+    $("#tripStatus").textContent = error.message;
+  }
+}
+
+async function simulateNextLeg() {
+  if (!state.activeTrip) {
+    $("#tripStatus").textContent = "Start a trip session first.";
+    return;
+  }
+  const nextMode = state.activeTrip.planned_modes[state.activeTrip.scans.length] || state.activeTrip.planned_modes.at(-1);
+  const payload = demoLegFor(nextMode, state.activeTrip.scans.length);
+  $("#tripStatus").textContent = `Scanning ${payload.mode} leg...`;
+  try {
+    state.activeTrip = await request(`/api/trips/${state.activeTrip.id}/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    renderTripSession();
+  } catch (error) {
+    $("#tripStatus").textContent = error.message;
+  }
+}
+
+async function endTripSession() {
+  if (!state.activeTrip) {
+    $("#tripStatus").textContent = "No active trip to close.";
+    return;
+  }
+  $("#tripStatus").textContent = "Closing trip and charging wallet...";
+  try {
+    const payment = await request(`/api/trips/${state.activeTrip.id}/end`, { method: "POST" });
+    state.activeTrip = null;
+    state.user.balance_thb = payment.balance_thb;
+    $("#walletBalance").textContent = payment.balance_thb;
+    $("#tripStatus").textContent = `Trip paid: ${payment.charged_thb} THB. Wallet updated, ticket QR reset for the next journey.`;
+    resetTicketView();
+    renderTripSession(payment.trip);
+  } catch (error) {
+    $("#tripStatus").textContent = error.message;
+  }
+}
+
+function renderTripSession(overrideTrip) {
+  const trip = overrideTrip || state.activeTrip;
+  if (!trip) {
+    $("#tripTimeline").innerHTML = "";
+    $("#tripStatus").textContent = state.user ? t("noTripYet") : (state.lang === "th" ? "เข้าสู่ระบบเพื่อสร้างทริปทดสอบจริง" : "Sign in to create a real test session.");
+    return;
+  }
+  const paid = trip.status === "paid";
+  $("#tripStatus").textContent = paid
+    ? (state.lang === "th" ? `จ่ายแล้ว ${trip.total_charged_thb}/45 บาท ${trip.anomaly_flags ? `มี flag ตรวจสอบ ${trip.anomaly_flags} จุด` : "ไม่มี flag ตรวจสอบ"}` : `Paid trip ${trip.total_charged_thb}/45 THB. ${trip.anomaly_flags ? `${trip.anomaly_flags} review flag(s).` : "No review flags."}`)
+    : (state.lang === "th" ? `ทริปไป ${trip.destination}: คิดเงินแล้ว ${trip.total_charged_thb}/45 บาท จาก ${trip.scans.length} การสแกน` : `Active trip to ${trip.destination}: ${trip.total_charged_thb}/45 THB charged across ${trip.scans.length} scan(s).`);
+  $("#tripTimeline").innerHTML = trip.scans.length
+    ? trip.scans.map((scan) => `
+      <div class="rounded-2xl border ${scan.is_expected ? "border-slate-100" : "border-amber-200 bg-amber-50"} p-3">
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-sm font-black text-transit-ink">#${scan.sequence_no} ${scan.mode.toUpperCase()} · ${escapeHtml(scan.stop_label)}</p>
+          <p class="text-sm font-black text-transit-teal">${scan.charged_thb} THB</p>
+        </div>
+        <p class="mt-1 text-xs font-bold text-slate-500">${escapeHtml(scan.operator_label)} · raw ${scan.raw_fare_thb} THB · ${escapeHtml(scan.vehicle_id || "verified validator")}</p>
+        ${scan.anomaly_reason ? `<p class="mt-2 text-xs font-black text-amber-700">${escapeHtml(scan.anomaly_reason)}</p>` : ""}
+      </div>
+    `).join("")
+    : `<div class="rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-500">${state.lang === "th" ? 'เริ่มทริปแล้ว กด "สแกนช่วงถัดไป" เพื่อจำลอง gate รถไฟ เครื่องสแกนบนรถ หรือเจ้าหน้าที่ท่าเรือ' : 'Trip started. Press "Scan next leg" to simulate the first gate, bus validator, or pier staff scan.'}</div>`;
+}
+
 async function submitReport(event) {
   event.preventDefault();
+  const form = event.currentTarget;
   $("#message").textContent = "Submitting report...";
   try {
     const dest = currentDestination();
-    event.currentTarget.elements.latitude.value = dest.lat;
-    event.currentTarget.elements.longitude.value = dest.lng;
-    const payload = await request("/api/reports", { method: "POST", body: new FormData(event.currentTarget) });
-    event.currentTarget.reset();
+    form.elements.latitude.value = dest.lat;
+    form.elements.longitude.value = dest.lng;
+    const payload = await request("/api/reports", { method: "POST", body: new FormData(form) });
+    form.reset();
     $("#message").textContent = `Report submitted: ${payload.id.slice(0, 8).toUpperCase()}. Ops can review it in the dashboard.`;
   } catch (error) {
     $("#message").textContent = error.message;

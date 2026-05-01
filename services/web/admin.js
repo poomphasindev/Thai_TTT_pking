@@ -4,6 +4,8 @@ const ticketList = document.querySelector("#ticketList");
 const statusFilter = document.querySelector("#statusFilter");
 const categoryFilter = document.querySelector("#categoryFilter");
 const refresh = document.querySelector("#refresh");
+const walletTopupForm = document.querySelector("#walletTopupForm");
+const walletAdminMessage = document.querySelector("#walletAdminMessage");
 
 let cachedReports = [];
 let cachedTickets = [];
@@ -209,6 +211,21 @@ list.addEventListener("click", async (event) => {
 statusFilter.addEventListener("change", loadAll);
 categoryFilter.addEventListener("change", loadAll);
 refresh.addEventListener("click", loadAll);
+walletTopupForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  walletAdminMessage.textContent = "Adding wallet credit...";
+  const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
+  payload.amount_thb = Number(payload.amount_thb);
+  const res = await fetch("/api/wallet/admin-credit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const user = await res.json();
+  walletAdminMessage.textContent = res.ok
+    ? `${user.display_name} balance is now ${user.balance_thb} THB.`
+    : (user.detail || "Could not add wallet credit.");
+});
 ticketList.addEventListener("click", async (event) => {
   const button = event.target.closest(".validate-ticket");
   if (!button) return;

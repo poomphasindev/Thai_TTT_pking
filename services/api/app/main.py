@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.db import init_db
-from app.routers import auth, copilot, health, places, reports, tickets
+from app.routers import auth, copilot, health, places, reports, tickets, trips, wallet
 
 
 def create_app() -> FastAPI:
@@ -40,6 +40,8 @@ def create_app() -> FastAPI:
     app.include_router(places.router, prefix="/api", tags=["places"])
     app.include_router(reports.router, prefix="/api", tags=["reports"])
     app.include_router(tickets.router, prefix="/api", tags=["tickets"])
+    app.include_router(trips.router, prefix="/api", tags=["trips"])
+    app.include_router(wallet.router, prefix="/api", tags=["wallet"])
 
     app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 

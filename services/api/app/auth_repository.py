@@ -18,7 +18,13 @@ def _hash_token(token: str) -> str:
 
 
 def _row_to_user(row) -> UserOut:
-    return UserOut(id=row["id"], email=row["email"], display_name=row["display_name"], role=row["role"])
+    return UserOut(
+        id=row["id"],
+        email=row["email"],
+        display_name=row["display_name"],
+        role=row["role"],
+        balance_thb=row["balance_thb"],
+    )
 
 
 class AuthRepository:

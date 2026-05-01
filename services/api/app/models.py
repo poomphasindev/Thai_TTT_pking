@@ -105,6 +105,13 @@ class UserOut(BaseModel):
     email: str
     display_name: str
     role: str = "tourist"
+    balance_thb: int = 0
+
+
+class WalletCreditPayload(BaseModel):
+    email: str = Field(min_length=3, max_length=160)
+    amount_thb: int = Field(gt=0, le=10000)
+    reason: str | None = Field(default=None, max_length=160)
 
 
 class PlaceOut(BaseModel):
@@ -156,6 +163,69 @@ class TicketTapResponse(BaseModel):
     ticket: TicketOut
     tap: TicketTapOut
     saved_thb: int
+
+
+class TripStatus(StrEnum):
+    in_progress = "in_progress"
+    paid = "paid"
+    cancelled = "cancelled"
+
+
+class TripCreate(BaseModel):
+    ticket_id: str | None = Field(default=None, max_length=80)
+    origin: str = Field(min_length=1, max_length=160)
+    destination: str = Field(min_length=1, max_length=160)
+    planned_modes: list[str] = Field(default_factory=lambda: ["rail", "bus", "boat"], min_length=1, max_length=6)
+    estimated_fare_thb: int = Field(default=45, ge=0, le=300)
+    fare_cap_thb: int = Field(default=45, ge=1, le=300)
+
+
+class TripScanCreate(BaseModel):
+    mode: str = Field(pattern="^(rail|bus|boat|walk)$")
+    operator_label: str = Field(min_length=1, max_length=160)
+    vehicle_id: str | None = Field(default=None, max_length=80)
+    stop_label: str = Field(min_length=1, max_length=160)
+    raw_fare_thb: int = Field(ge=0, le=300)
+
+
+class TripScanOut(BaseModel):
+    id: str
+    trip_id: str
+    sequence_no: int
+    mode: str
+    operator_label: str
+    vehicle_id: str | None = None
+    stop_label: str
+    raw_fare_thb: int
+    charged_thb: int
+    is_expected: bool
+    anomaly_reason: str | None = None
+    scanned_at: datetime
+
+
+class TripSessionOut(BaseModel):
+    id: str
+    user_id: str
+    ticket_id: str | None = None
+    origin: str
+    destination: str
+    planned_modes: list[str]
+    status: TripStatus
+    fare_cap_thb: int
+    estimated_fare_thb: int
+    total_charged_thb: int
+    anomaly_flags: int
+    started_at: datetime
+    ended_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+    scans: list[TripScanOut] = Field(default_factory=list)
+
+
+class TripPaymentOut(BaseModel):
+    trip: TripSessionOut
+    balance_thb: int
+    charged_thb: int
 
 
 def utc_now() -> datetime:

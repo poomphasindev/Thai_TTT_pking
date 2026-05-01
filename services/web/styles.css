@@ -1124,6 +1124,27 @@ textarea:focus {
   gap: 14px;
 }
 
+.wallet-topup {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(180px, 1fr) 120px auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: #f8fafc;
+}
+
+.wallet-topup h3 {
+  margin: 4px 0 0;
+}
+
+.wallet-topup .message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .ops-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.7fr);
@@ -1575,6 +1596,7 @@ textarea:focus {
   .route-form,
   .dense-route,
   .leg-row,
+  .wallet-topup,
   .timeline-item,
   .report-card,
   .ops-ticket {

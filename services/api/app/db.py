@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'tourist',
+  balance_thb INTEGER NOT NULL DEFAULT 200,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -81,6 +82,42 @@ CREATE TABLE IF NOT EXISTS ticket_taps (
 CREATE INDEX IF NOT EXISTS idx_tickets_created_at ON tickets(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
 CREATE INDEX IF NOT EXISTS idx_ticket_taps_ticket_id ON ticket_taps(ticket_id);
+
+CREATE TABLE IF NOT EXISTS trip_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  ticket_id TEXT REFERENCES tickets(id),
+  origin TEXT NOT NULL,
+  destination TEXT NOT NULL,
+  planned_modes TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'in_progress',
+  fare_cap_thb INTEGER NOT NULL DEFAULT 45,
+  estimated_fare_thb INTEGER NOT NULL DEFAULT 45,
+  total_charged_thb INTEGER NOT NULL DEFAULT 0,
+  anomaly_flags INTEGER NOT NULL DEFAULT 0,
+  started_at TEXT NOT NULL,
+  ended_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS trip_scans (
+  id TEXT PRIMARY KEY,
+  trip_id TEXT NOT NULL REFERENCES trip_sessions(id),
+  sequence_no INTEGER NOT NULL,
+  mode TEXT NOT NULL,
+  operator_label TEXT NOT NULL,
+  vehicle_id TEXT,
+  stop_label TEXT NOT NULL,
+  raw_fare_thb INTEGER NOT NULL,
+  charged_thb INTEGER NOT NULL,
+  is_expected INTEGER NOT NULL DEFAULT 1,
+  anomaly_reason TEXT,
+  scanned_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_trip_sessions_user_status ON trip_sessions(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_trip_scans_trip_id ON trip_scans(trip_id, sequence_no);
 """
 
 
@@ -90,6 +127,7 @@ def init_db() -> None:
     with sqlite3.connect(settings.database_path) as conn:
         conn.executescript(SCHEMA)
         _ensure_report_columns(conn)
+        _ensure_user_columns(conn)
         _ensure_ticket_columns(conn)
         conn.commit()
 
@@ -128,3 +166,9 @@ def _ensure_ticket_columns(conn: sqlite3.Connection) -> None:
     existing = {row[1] for row in conn.execute("PRAGMA table_info(tickets)").fetchall()}
     if "user_id" not in existing:
         conn.execute("ALTER TABLE tickets ADD COLUMN user_id TEXT REFERENCES users(id)")
+
+
+def _ensure_user_columns(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+    if "balance_thb" not in existing:
+        conn.execute("ALTER TABLE users ADD COLUMN balance_thb INTEGER NOT NULL DEFAULT 200")

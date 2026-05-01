@@ -6,7 +6,8 @@ The app combines:
 
 - Landmark-first smart route planning inspired by Bangkok rail/route UX
 - Joint Ticket QR simulation with 8-45 THB fare-cap logic
-- Operator tap simulation for rail, bus, and boat gates
+- Testable trip sessions for rail, bus, and boat scans
+- Prepaid wallet simulation with admin top-up
 - Tourist incident reporting with photo, location, category, and admin review
 - Responsive public app UI and operations dashboard
 
@@ -25,6 +26,9 @@ Working:
 - Ticket creation behind sign-in
 - Real QR SVG generation
 - Tap-in fare-cap simulation
+- Trip session scan timeline with anomaly flags
+- Wallet balance deduction when the trip is ended and paid
+- Admin wallet credit tool for demos and QA
 - Mobile responsive UI
 - TH/EN public app language toggle
 - YouTube tourism hero video with local image fallback
@@ -41,7 +45,7 @@ Working:
 Reserved for next sprint:
 
 - TAT Data API ingestion
-- AI route copilot / RAG
+- Supabase Postgres adapter for persistent serverless deployment
 - Vision-based incident analysis
 - Payment-grade auth, real payment, and operator validation
 - Production map provider key management
@@ -70,9 +74,11 @@ Reserved for next sprint:
 │   │   │   ├── main.py
 │   │   │   ├── models.py
 │   │   │   ├── auth_repository.py
+│   │   │   ├── trip_repository.py
 │   │   │   ├── repositories.py
 │   │   │   └── ticket_repository.py
-│   │   └── requirements.txt
+│   │   ├── requirements.txt
+│   │   └── tests/
 │   ├── web/
 │   │   ├── assets/
 │   │   ├── index.html
@@ -222,6 +228,19 @@ Tickets:
 - `POST /api/tickets/{ticket_id}/revoke`
 - `GET /api/tickets/{ticket_id}/qr.svg`
 
+Trips:
+
+- `POST /api/trips`
+- `GET /api/trips/active`
+- `GET /api/trips/{trip_id}`
+- `POST /api/trips/{trip_id}/scan`
+- `POST /api/trips/{trip_id}/end`
+
+Wallet:
+
+- `GET /api/wallet/me`
+- `POST /api/wallet/admin-credit`
+
 ## Demo Flow
 
 1. Open `/`
@@ -229,11 +248,34 @@ Tickets:
 3. Sign in from the ticket prompt
 4. Generate a Joint Ticket
 5. Click the card to flip and show QR
-6. Show the QR copy in the pitch as the operator validation moment
+6. Use **Trip test console**:
+   - `Start trip session`
+   - `Scan next leg` for rail/bus/boat validation events
+   - `End and pay` to deduct wallet balance
 7. Open the report bottom sheet from Safety and support
 8. Submit an incident report
 9. Open `/admin.html`
-10. Review reports and recent tickets
+10. Review reports, recent tickets, and top up a tourist wallet by email
+
+## Test Strategy
+
+The core workflow has a smoke test so the team can prove the logic works before a pitch or deploy.
+
+```bash
+python services/api/tests/smoke_test.py
+```
+
+The smoke test creates a clean ignored SQLite DB under `data/smoke_test.db` and verifies:
+
+- tourist login with unique email
+- ticket issuance behind auth
+- trip session creation
+- rail, bus, and boat scans
+- 45 THB cap enforcement
+- wallet balance deduction after payment
+- transit issue report creation
+
+For manual QA, use `/` for the tourist flow and `/admin.html` for the operator/admin view.
 
 ## Data And Map Strategy
 
@@ -248,6 +290,19 @@ Current implementation:
 - POI cards use numbered pins matched to map markers; clicking a card or marker focuses the same place
 - Local brochure-map preview is shown as fallback when the map style or network is unavailable
 - Public app UI is merged from the premium prototype direction and lives in `services/web/index.html`
+
+## Deployment Notes
+
+SQLite is good for local development, hackathon demos, and a single long-running FastAPI process.
+
+For Vercel-style serverless deployment, SQLite files are not a reliable persistent database because serverless instances can be ephemeral and concurrent writes are not ideal. The recommended production upgrade is:
+
+- Frontend: Vercel static hosting
+- Backend: FastAPI on Render, Railway, Fly.io, Cloud Run, or Vercel Python functions only for light API routes
+- Database: Supabase Postgres
+- File uploads: Supabase Storage or S3-compatible storage
+
+Current API is repository-based, so moving from SQLite to Supabase/Postgres should mainly replace `get_conn()` and SQL dialect details rather than rewriting the UI.
 
 Important provider notes:
 

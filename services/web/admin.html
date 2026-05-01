@@ -97,6 +97,16 @@
           <a class="button secondary compact" href="/#ticket">Create ticket</a>
         </div>
         <p class="hero-text">Use this panel in the pitch as the staff-side view: scan a tourist QR, confirm the remaining charge, then the cap engine updates billing across modes.</p>
+        <form id="walletTopupForm" class="wallet-topup" aria-label="Wallet top up">
+          <div>
+            <p class="eyebrow">Demo wallet</p>
+            <h3>Top up tourist balance</h3>
+          </div>
+          <input id="walletEmail" name="email" type="email" placeholder="tourist@email.com" required />
+          <input id="walletAmount" name="amount_thb" type="number" min="1" max="10000" value="200" required />
+          <button class="button primary compact">Add credit</button>
+          <p id="walletAdminMessage" class="message"></p>
+        </form>
         <div id="ticketList" class="ticket-list"></div>
       </section>
     </main>
