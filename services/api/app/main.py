@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.db import init_db
-from app.routers import health, reports, tickets
+from app.routers import auth, health, places, reports, tickets
 
 
 def create_app() -> FastAPI:
@@ -35,6 +35,8 @@ def create_app() -> FastAPI:
         return response
 
     app.include_router(health.router, prefix="/api", tags=["health"])
+    app.include_router(auth.router, prefix="/api", tags=["auth"])
+    app.include_router(places.router, prefix="/api", tags=["places"])
     app.include_router(reports.router, prefix="/api", tags=["reports"])
     app.include_router(tickets.router, prefix="/api", tags=["tickets"])
 

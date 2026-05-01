@@ -20,20 +20,22 @@ Working:
 
 - Public tourist app at `/`
 - Admin dashboard at `/admin.html`
+- Demo auth with secure HttpOnly session cookie
 - Report creation and review status updates
-- Ticket creation
+- Ticket creation behind sign-in
 - Real QR SVG generation
 - Tap-in fare-cap simulation
 - Mobile responsive UI
 - TH/EN public app language toggle
-- MapLibre map with local brochure-map fallback
+- YouTube tourism hero video with local image fallback
+- MapLibre map with OpenStreetMap Overpass POI layer and local brochure-map fallback
 
 Reserved for next sprint:
 
 - TAT Data API ingestion
 - AI route copilot / RAG
 - Vision-based incident analysis
-- Real auth, real payment, and operator validation
+- Payment-grade auth, real payment, and operator validation
 - Production map provider key management
 
 ## Tech Stack
@@ -43,6 +45,7 @@ Reserved for next sprint:
 - Frontend: Premium mobile-first static HTML + Tailwind CDN + Vanilla JS served by FastAPI
 - QR generation: `qrcode`
 - Map UI: MapLibre GL JS using a tokenless demo style, with local image fallback
+- POI source: OpenStreetMap Overpass API through the backend
 - Visual assets: local optimized Bangkok landmark images, no random image endpoint in the main app
 - Environment management: Conda
 
@@ -58,6 +61,7 @@ Reserved for next sprint:
 │   │   │   ├── db.py
 │   │   │   ├── main.py
 │   │   │   ├── models.py
+│   │   │   ├── auth_repository.py
 │   │   │   ├── repositories.py
 │   │   │   └── ticket_repository.py
 │   │   └── requirements.txt
@@ -138,20 +142,50 @@ TTM_MAPTILER_KEY=
 TTM_MAPBOX_TOKEN=
 TTM_LONGDO_API_KEY=
 TTM_GOOGLE_MAPS_API_KEY=
+TTM_GOOGLE_PLACES_API_KEY=
 ```
 
 Notes:
 
 - API keys must never be placed in `services/web/*.js` or HTML.
 - Frontend calls this backend only.
-- Backend will call external APIs in future sprints.
+- Backend already calls tokenless OpenStreetMap Overpass for nearby POIs.
+- Backend should call Google Places, Longdo, MapTiler, Mapbox, TAT, or OpenAI APIs if those providers are enabled later.
 - Runtime files under `data/` and `services/api/data/` are ignored.
+
+## Auth Model
+
+This is hackathon-safe demo auth, not full production IAM.
+
+- `POST /api/auth/login` creates or updates a tourist profile by email.
+- The API returns a `st_session` HttpOnly cookie.
+- Ticket issuance requires that cookie.
+- Session tokens are hashed before storage.
+- Logout removes the session server-side and deletes the cookie.
+
+Production upgrade path:
+
+- Use a real identity provider or passwordless OTP.
+- Set cookie `secure=True` behind HTTPS.
+- Add CSRF protection for mutating cookie-auth requests.
+- Add role-based access control for `/admin.html` and admin APIs.
+- Keep all provider keys server-side.
 
 ## API Summary
 
 Health:
 
 - `GET /api/health`
+
+Auth:
+
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `POST /api/auth/logout`
+
+Places:
+
+- `GET /api/places/nearby?lat=13.7437&lng=100.4889&category=food`
 
 Reports:
 
@@ -175,24 +209,35 @@ Tickets:
 
 1. Open `/`
 2. Use the smart route planner section
-3. Generate a Joint Ticket
-4. Click the card to flip and show QR
-5. Simulate operator tap
-6. Submit an incident report
-7. Open `/admin.html`
-8. Review reports and recent tickets
+3. Sign in from the ticket prompt
+4. Generate a Joint Ticket
+5. Click the card to flip and show QR
+6. Show the QR copy in the pitch as the operator validation moment
+7. Open the report bottom sheet from Safety and support
+8. Submit an incident report
+9. Open `/admin.html`
+10. Review reports and recent tickets
 
 ## Data And Map Strategy
 
 Current implementation:
 
 - Bangkok-only curated landmark dataset in `services/web/app.js`
-- Pitch-safe route templates with realistic ranges for Bangkok tourist trips
+- Pitch-safe route templates with explicit boarding, transfer, QR validation, and arrival steps
 - Fare values are simulation values, not official live operator prices
 - Joint Ticket 45 THB cap is represented as a policy simulation
 - MapLibre renders the map using an external demo style when internet is available
-- Local brochure-map preview is shown as fallback
+- Nearby categories are loaded from OpenStreetMap Overpass through `/api/places/nearby`
+- Local brochure-map preview is shown as fallback when the map style or network is unavailable
 - Public app UI is merged from the premium prototype direction and lives in `services/web/index.html`
+
+Important provider notes:
+
+- Google star ratings are not shown by default because real ratings require Google Places API + billing.
+- Do not fake ratings in a judge-facing pitch. Use the current `OSM verified` label unless a provider key is configured.
+- Longdo Map API is a strong Thailand-first option if the team wants Thai map labels and local coverage.
+- Google Maps Platform is best for ratings/place photos but must be proxied through the backend.
+- TAT Data API is best for official tourism POIs/events and should become the curated tourism source of truth.
 
 Recommended production path:
 
@@ -212,6 +257,9 @@ Already handled:
 - Upload folders are ignored
 - Generated report JSON is ignored
 - Python cache files are ignored
+- API keys are not embedded in frontend files
+- Demo session tokens are stored hashed
+- Ticket issuance requires sign-in
 
 Before pushing changes:
 

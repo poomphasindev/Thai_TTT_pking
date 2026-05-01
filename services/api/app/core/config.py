@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     tat_api_base_url: str = "https://tatdataapi.io/api/v2"
     openai_api_key: str | None = None
     google_api_key: str | None = None
+    maptiler_key: str | None = None
+    mapbox_token: str | None = None
+    longdo_api_key: str | None = None
+    google_maps_api_key: str | None = None
+    google_places_api_key: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

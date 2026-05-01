@@ -41,7 +41,7 @@ def _row_to_tap(row: sqlite3.Row) -> TicketTapOut:
 
 
 class TicketRepository:
-    def create(self, payload: TicketCreate) -> TicketOut:
+    def create(self, payload: TicketCreate, user_id: str | None = None) -> TicketOut:
         now = utc_now()
         ticket_id = uuid4().hex
         qr_payload = f"ttm://joint-ticket/{ticket_id}?v=1"
@@ -52,14 +52,15 @@ class TicketRepository:
             conn.execute(
                 """
                 INSERT INTO tickets (
-                  id, holder_name, pass_type, origin, destination, qr_token_hash,
+                  id, user_id, holder_name, pass_type, origin, destination, qr_token_hash,
                   qr_payload, status, fare_cap_thb, accumulated_fare_thb,
                   rides_count, valid_until, created_at, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     ticket_id,
+                    user_id,
                     payload.holder_name.strip(),
                     payload.pass_type,
                     payload.origin.strip(),

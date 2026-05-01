@@ -70,6 +70,31 @@ class TicketCreate(BaseModel):
     destination: str = Field(default="Tourist landmark", max_length=160)
 
 
+class LoginPayload(BaseModel):
+    email: str = Field(min_length=3, max_length=160)
+    display_name: str = Field(min_length=1, max_length=120)
+
+
+class UserOut(BaseModel):
+    id: str
+    email: str
+    display_name: str
+    role: str = "tourist"
+
+
+class PlaceOut(BaseModel):
+    id: str
+    name: str
+    category: str
+    kind: str | None = None
+    latitude: float
+    longitude: float
+    source: str = "OpenStreetMap"
+    rating: float | None = None
+    address: str | None = None
+    distance_m: int | None = None
+
+
 class TicketOut(BaseModel):
     id: str
     holder_name: str

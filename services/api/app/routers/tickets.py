@@ -1,7 +1,8 @@
 import hashlib
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 
+from app.auth_repository import SESSION_COOKIE, auth_repo
 from app.models import TicketCreate, TicketOut, TicketTapCreate, TicketTapOut, TicketTapResponse
 from app.ticket_repository import tickets_repo
 
@@ -9,8 +10,11 @@ router = APIRouter()
 
 
 @router.post("/tickets", response_model=TicketOut, status_code=201)
-def create_ticket(payload: TicketCreate) -> TicketOut:
-    return tickets_repo.create(payload)
+def create_ticket(payload: TicketCreate, request: Request) -> TicketOut:
+    user = auth_repo.get_user_by_token(request.cookies.get(SESSION_COOKIE))
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in before issuing a Joint Ticket")
+    return tickets_repo.create(payload, user_id=user.id)
 
 
 @router.get("/tickets", response_model=list[TicketOut])

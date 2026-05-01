@@ -33,8 +33,26 @@ CREATE INDEX IF NOT EXISTS idx_reports_created_at ON reports(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
 CREATE INDEX IF NOT EXISTS idx_reports_category ON reports(category);
 
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'tourist',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  token_hash TEXT UNIQUE NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS tickets (
   id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
   holder_name TEXT NOT NULL,
   pass_type TEXT NOT NULL,
   origin TEXT NOT NULL,
@@ -72,6 +90,7 @@ def init_db() -> None:
     with sqlite3.connect(settings.database_path) as conn:
         conn.executescript(SCHEMA)
         _ensure_report_columns(conn)
+        _ensure_ticket_columns(conn)
         conn.commit()
 
 
@@ -103,3 +122,9 @@ def _ensure_report_columns(conn: sqlite3.Connection) -> None:
     for column, ddl in columns.items():
         if column not in existing:
             conn.execute(f"ALTER TABLE reports ADD COLUMN {column} {ddl}")
+
+
+def _ensure_ticket_columns(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(tickets)").fetchall()}
+    if "user_id" not in existing:
+        conn.execute("ALTER TABLE tickets ADD COLUMN user_id TEXT REFERENCES users(id)")

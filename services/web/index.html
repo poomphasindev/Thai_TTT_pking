@@ -15,7 +15,7 @@
       tailwind.config = {
         theme: {
           extend: {
-            fontFamily: { sans: ["Inter", "Prompt", "system-ui", "sans-serif"] },
+            fontFamily: { sans: ["Pracharath", "Inter", "Prompt", "system-ui", "sans-serif"] },
             colors: {
               transit: {
                 ink: "#0F1F2E",
@@ -36,8 +36,14 @@
       };
     </script>
     <style>
+      @font-face {
+        font-family: "Pracharath";
+        src: url("https://peoplesparty.or.th/wp-content/themes/seed-spring/fonts/pracharath/pracharath.woff2?v3") format("woff2");
+        font-display: swap;
+      }
       html { scroll-behavior: smooth; }
       body {
+        font-family: "Pracharath", "Inter", "Prompt", system-ui, sans-serif;
         background:
           radial-gradient(circle at 20% 0%, rgba(247,201,72,.22), transparent 28rem),
           radial-gradient(circle at 100% 12%, rgba(5,134,111,.16), transparent 30rem),
@@ -45,6 +51,7 @@
       }
       .glass { background: rgba(255,255,255,.84); backdrop-filter: blur(22px); }
       .hero-image { background-image: linear-gradient(180deg, rgba(5,28,48,.08), rgba(5,28,48,.72)), url("/assets/landmarks/wat-arun.jpg"); }
+      .hero-video { height: 120%; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1.22); width: 120%; }
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       .ticket-perspective { perspective: 1400px; }
@@ -92,7 +99,9 @@
       <header class="sticky top-0 z-40 border-b border-white/60 bg-white/85 px-5 py-4 backdrop-blur-xl lg:px-8">
         <div class="flex items-center justify-between gap-3">
           <a href="#route" class="flex items-center gap-3">
-            <div class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue text-sm font-black text-white shadow-card">ST</div>
+            <div class="grid h-11 w-11 place-items-center overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-slate-100">
+              <img src="/assets/logo.png" alt="Sawasdee Transit logo" class="h-9 w-9 object-contain" />
+            </div>
             <div>
               <p class="text-base font-black leading-none">Sawasdee Transit</p>
               <p class="mt-1 text-xs font-semibold text-slate-500" data-i18n="brandSub">Bangkok Tourist Mobility OS</p>
@@ -102,17 +111,27 @@
             <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#route" data-i18n="navRoute">Route</a>
             <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#explore" data-i18n="navExplore">Explore</a>
             <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#ticket" data-i18n="navTicket">Ticket</a>
-            <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="#report" data-i18n="navReport">Report</a>
+            <button id="navReportBtn" class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" type="button" data-i18n="navReport">Report</button>
             <a class="rounded-full px-4 py-2 hover:bg-white hover:text-transit-teal" href="/admin.html">Ops</a>
           </nav>
-          <button id="langToggle" class="rounded-full bg-transit-mint px-3 py-2 text-xs font-black text-transit-teal">TH</button>
+          <div class="flex items-center gap-2">
+            <button id="authButton" class="hidden rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 sm:inline-flex">Sign in</button>
+            <button id="langToggle" class="rounded-full bg-transit-mint px-3 py-2 text-xs font-black text-transit-teal">TH</button>
+          </div>
         </div>
       </header>
 
       <main>
         <section id="route" class="relative">
-          <div class="hero-image h-[560px] bg-cover bg-center lg:h-[680px]">
-            <div class="flex h-full flex-col justify-end px-5 pb-28 pt-8 lg:px-10 lg:pb-32">
+          <div class="hero-image relative h-[560px] overflow-hidden bg-cover bg-center lg:h-[680px]">
+            <iframe
+              class="hero-video pointer-events-none absolute hidden lg:block"
+              src="https://www.youtube.com/embed/lG6jr5la0H4?autoplay=1&mute=1&controls=0&loop=1&playlist=lG6jr5la0H4&playsinline=1&modestbranding=1&rel=0"
+              title="Bangkok tourism video background"
+              allow="autoplay; encrypted-media; picture-in-picture"
+            ></iframe>
+            <div class="absolute inset-0 bg-gradient-to-b from-transit-navy/10 via-transit-navy/24 to-transit-navy/82"></div>
+            <div class="relative flex h-full flex-col justify-end px-5 pb-28 pt-8 lg:px-10 lg:pb-32">
               <div class="max-w-3xl text-white">
                 <p class="mb-3 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] backdrop-blur-lg" data-i18n="heroBadge">Bangkok-only pilot</p>
                 <h1 class="text-5xl font-black leading-[0.95] tracking-tight lg:text-7xl" data-i18n="heroTitle">Navigate Bangkok like a local.</h1>
@@ -177,7 +196,7 @@
                 <div class="mt-5 rounded-3xl bg-slate-50 p-4">
                   <div class="mb-3 flex items-center justify-between">
                     <p class="font-black" data-i18n="routeDetails">Route details</p>
-                    <span id="routeDisclaimer" class="text-xs font-bold text-slate-400">simulation</span>
+                    <span id="routeDisclaimer" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">operator-ready simulation</span>
                   </div>
                   <div id="routeSteps" class="space-y-3"></div>
                 </div>
@@ -192,13 +211,20 @@
               <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="exploreAround">Explore around destination</p>
               <h2 id="exploreTitle" class="mt-2 text-3xl font-black tracking-tight">Wat Arun area</h2>
             </div>
-            <span class="hidden rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-500 lg:inline-flex">MapLibre</span>
+            <span class="hidden rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-500 lg:inline-flex">OSM + MapLibre</span>
+          </div>
+
+          <div id="placeCategoryTabs" class="no-scrollbar mb-4 flex gap-2 overflow-x-auto">
+            <button data-place-category="food" class="place-chip rounded-full bg-transit-ink px-4 py-3 text-sm font-black text-white">Restaurants</button>
+            <button data-place-category="shopping" class="place-chip rounded-full bg-slate-100 px-4 py-3 text-sm font-black text-slate-600">Shopping</button>
+            <button data-place-category="attractions" class="place-chip rounded-full bg-slate-100 px-4 py-3 text-sm font-black text-slate-600">Landmarks</button>
+            <button data-place-category="transport" class="place-chip rounded-full bg-slate-100 px-4 py-3 text-sm font-black text-slate-600">Transit</button>
           </div>
 
           <div class="relative h-72 overflow-hidden rounded-[2rem] bg-slate-950 shadow-card lg:h-96">
-            <div id="map" class="absolute inset-0"></div>
-            <img id="mapFallback" class="absolute inset-0 h-full w-full object-cover opacity-90" src="/assets/generated/bangkok-map-preview.jpg" alt="Bangkok map fallback" />
-            <div class="absolute bottom-5 left-5 right-5 rounded-3xl bg-slate-950/70 p-4 text-white backdrop-blur-xl">
+            <div id="map" class="absolute inset-0 z-10"></div>
+            <img id="mapFallback" class="absolute inset-0 z-0 h-full w-full object-cover opacity-90 transition-opacity" src="/assets/generated/bangkok-map-preview.jpg" alt="Bangkok map fallback" />
+            <div class="absolute bottom-5 left-5 right-5 z-20 rounded-3xl bg-slate-950/70 p-4 text-white backdrop-blur-xl">
               <p class="text-xs font-black uppercase tracking-[0.16em] text-white/60" data-i18n="touristContext">Tourist context</p>
               <p id="mapContext" class="mt-2 text-lg font-black">Walkable heritage area with verified POI cluster.</p>
             </div>
@@ -211,6 +237,7 @@
           <div class="mb-5">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal" data-i18n="wowFactor">The wow factor</p>
             <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="ticketTitle">3D Holographic Joint Ticket</h2>
+            <p id="ticketGuide" class="mt-2 text-sm font-bold leading-6 text-slate-500">Sign in once, issue your tourist pass, then show the live QR at each supported gate or staff checkpoint.</p>
           </div>
 
           <form id="ticketForm" class="mb-5 grid gap-3 rounded-[2rem] bg-white p-4 shadow-card lg:grid-cols-[1fr_1fr_auto]">
@@ -246,7 +273,7 @@
                     <div class="grid h-full w-full place-items-center"><div class="text-sm font-black text-slate-400" id="qrEmpty">Generate first</div><img id="ticketQr" class="w-full" alt="Joint ticket QR" hidden /></div>
                     <div class="scanner-line absolute left-4 right-4 h-1 rounded-full bg-transit-teal shadow-[0_0_18px_rgba(5,134,111,.9)]"></div>
                   </div>
-                  <p class="text-center text-xs font-bold text-slate-500">Operator validation simulated for pitch demo.</p>
+                  <p class="text-center text-xs font-bold text-slate-500">Show this QR to station staff or scan at supported gates. The backend simulates operator validation and fare-cap charging.</p>
                 </div>
               </section>
             </div>
@@ -255,40 +282,84 @@
           <div class="mt-4 rounded-[1.5rem] bg-white p-4 text-center font-black text-slate-600 shadow-card lg:mx-auto lg:max-w-xl">Today's Rides: <span id="ticketRides" class="text-transit-blue">0</span><span class="mx-2 text-slate-300">|</span>Total Billed: <span class="text-transit-teal"><span id="ticketBilled">0</span>/45 THB Cap</span></div>
         </section>
 
-        <section id="report" class="px-5 py-6 pb-28 lg:px-10">
-          <form id="reportForm" class="rounded-[2rem] bg-white p-5 shadow-card lg:p-7">
-            <div class="mb-5"><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Manual-first incident report</p><h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="reportTitle">Report a transit issue</h2><p class="mt-2 text-sm font-semibold leading-6 text-slate-500" data-i18n="reportBody">No Vision AI required. Provide clear manual evidence first.</p></div>
-            <div class="grid gap-4 lg:grid-cols-2">
-              <label><span class="mb-2 block text-sm font-black">Category</span><select name="category" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi_refusal">Taxi refusal</option><option value="overpricing">Overpricing</option><option value="broken_pavement">Broken pavement</option><option value="unclear_signage">Unclear signage</option><option value="unsafe_crossing">Unsafe crossing</option><option value="other">Other</option></select></label>
-              <label><span class="mb-2 block text-sm font-black">Transport mode</span><select name="transport_mode" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi">Taxi</option><option value="rail">Rail</option><option value="bus">Bus</option><option value="boat">Boat</option><option value="walk">Walking infrastructure</option></select></label>
-              <label><span class="mb-2 block text-sm font-black">Plate / vehicle / train ID</span><input name="vehicle_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="1กข 1234, BTS car no., bus route" /></label>
-              <label><span class="mb-2 block text-sm font-black">Incident time</span><div class="flex gap-2"><input id="incidentTime" name="incident_time" type="datetime-local" class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /><button id="useNow" type="button" class="rounded-2xl bg-transit-mint px-4 font-black text-transit-teal">Now</button></div></label>
-              <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Location label</span><input name="location_label" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Wat Mangkon Exit 1, Yaowarat Road" /></label>
-              <input name="latitude" type="hidden" value="13.7563" /><input name="longitude" type="hidden" value="100.5018" />
-              <label><span class="mb-2 block text-sm font-black">Severity</span><select name="severity" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
-              <label><span class="mb-2 block text-sm font-black">Optional photo evidence</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /></label>
-              <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Description</span><textarea name="description" minlength="5" maxlength="2000" class="min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-semibold outline-none" placeholder="Add clear context: location, fare requested, vehicle number, staff behavior, signage issue..." required></textarea></label>
-              <label><span class="mb-2 block text-sm font-black">Name</span><input name="reporter_name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
-              <label><span class="mb-2 block text-sm font-black">Contact</span><input name="contact" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
+        <section id="support" class="px-5 py-6 pb-28 lg:px-10">
+          <div class="rounded-[2rem] bg-gradient-to-br from-transit-ink to-transit-navy p-5 text-white shadow-card lg:p-7">
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-transit-gold">Safety and support</p>
+            <h2 class="mt-2 text-3xl font-black tracking-tight" data-i18n="reportTitle">Report a transit issue</h2>
+            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-white/72" data-i18n="reportBody">Manual-first reporting with category, place, time, vehicle ID, and photo evidence. Vision AI can be added later without changing this flow.</p>
+            <div class="mt-5 grid gap-3 lg:grid-cols-3">
+              <button id="openReportBtn" class="rounded-3xl bg-white px-5 py-5 text-left text-transit-ink shadow-soft">
+                <span class="text-3xl">📝</span>
+                <span class="mt-3 block text-lg font-black">Open report form</span>
+                <span class="mt-1 block text-sm font-bold text-slate-500">Takes about 60 seconds</span>
+              </button>
+              <a href="tel:1155" class="rounded-3xl bg-red-500 px-5 py-5 text-left text-white shadow-soft">
+                <span class="text-3xl">☎</span>
+                <span class="mt-3 block text-lg font-black">Tourist Police 1155</span>
+                <span class="mt-1 block text-sm font-bold text-white/78">Emergency tourist support</span>
+              </a>
+              <a href="tel:191" class="rounded-3xl bg-white/10 px-5 py-5 text-left text-white ring-1 ring-white/15">
+                <span class="text-3xl">⚠</span>
+                <span class="mt-3 block text-lg font-black">Emergency 191</span>
+                <span class="mt-1 block text-sm font-bold text-white/70">Police emergency line</span>
+              </a>
             </div>
-            <button class="mt-5 w-full rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 font-black text-white shadow-card">Submit Smart Report</button>
-            <p id="message" class="mt-3 text-sm font-bold text-slate-500"></p>
-          </form>
+          </div>
         </section>
       </main>
 
       <nav class="fixed bottom-3 left-1/2 z-40 grid w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 grid-cols-4 rounded-[1.5rem] border border-white/70 bg-white/90 p-2 text-center text-xs font-black text-slate-500 shadow-soft backdrop-blur-xl lg:hidden">
-        <a class="rounded-2xl px-2 py-2 text-transit-teal" href="#route">Route</a><a class="rounded-2xl px-2 py-2" href="#explore">Explore</a><a class="rounded-2xl px-2 py-2" href="#ticket">Ticket</a><a class="rounded-2xl px-2 py-2" href="#report">Report</a>
+        <a class="rounded-2xl px-2 py-2 text-transit-teal" href="#route">Route</a><a class="rounded-2xl px-2 py-2" href="#explore">Explore</a><a class="rounded-2xl px-2 py-2" href="#ticket">Ticket</a><button id="mobileReportBtn" class="rounded-2xl px-2 py-2" type="button">Report</button>
       </nav>
     </div>
 
     <button id="aiFab" class="pulse-glow fixed bottom-24 right-5 z-50 grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-transit-teal to-transit-blue text-3xl text-white shadow-soft lg:bottom-8 lg:right-8">✨</button>
     <div id="sheetOverlay" class="pointer-events-none fixed inset-0 z-50 bg-slate-950/0 transition"></div>
+
+    <aside id="authSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
+      <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
+      <div class="flex items-start justify-between gap-4">
+        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Secure demo auth</p><h3 class="mt-1 text-2xl font-black">Create your ticket profile</h3></div>
+        <button id="closeAuthSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button>
+      </div>
+      <p class="mt-3 text-sm font-bold leading-6 text-slate-500">A session cookie links the Joint Ticket to a tourist profile. API keys and payment tokens stay server-side in production.</p>
+      <form id="authForm" class="mt-5 space-y-3">
+        <input name="display_name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Display name" value="Poom Tourist" required />
+        <input name="email" type="email" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="tourist@example.com" value="poom@example.com" required />
+        <button class="w-full rounded-2xl bg-transit-ink px-5 py-4 font-black text-white">Sign in and continue</button>
+      </form>
+      <button id="logoutBtn" class="mt-3 hidden w-full rounded-2xl bg-slate-100 px-5 py-4 font-black text-slate-600">Sign out</button>
+      <p id="authMessage" class="mt-3 text-sm font-bold text-slate-500"></p>
+    </aside>
+
     <aside id="aiSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-[2rem] bg-white p-5 shadow-2xl lg:right-8 lg:left-auto lg:max-w-md lg:rounded-[2rem]">
       <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
       <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Sawasdee AI Copilot</p><h3 class="mt-1 text-2xl font-black">Need a local tip?</h3></div><button id="closeSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button></div>
       <div id="chatLog" class="mt-5 max-h-72 space-y-3 overflow-y-auto"><div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">Need a local tip? Ask Sawasdee AI about routes, etiquette, food spots, or fare safety.</div></div>
       <form id="chatForm" class="mt-4 flex gap-2"><input id="chatInput" class="min-h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none" placeholder="Ask Sawasdee AI..." /><button class="rounded-2xl bg-transit-ink px-5 font-black text-white">Send</button></form>
+    </aside>
+
+    <aside id="reportSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92vh] max-w-3xl overflow-y-auto rounded-t-[2rem] bg-white p-5 shadow-2xl lg:rounded-[2rem]">
+      <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200"></div>
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-transit-teal">Manual-first incident report</p><h2 class="mt-1 text-3xl font-black tracking-tight">Report details</h2><p class="mt-2 text-sm font-semibold leading-6 text-slate-500">Use current route context, add exact vehicle/time evidence, and attach a photo if available.</p></div>
+        <button id="closeReportSheet" class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-xl font-black">×</button>
+      </div>
+      <form id="reportForm" class="grid gap-4 lg:grid-cols-2">
+        <label><span class="mb-2 block text-sm font-black">Category</span><select name="category" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi_refusal">Taxi refusal</option><option value="overpricing">Overpricing</option><option value="broken_pavement">Broken pavement</option><option value="unclear_signage">Unclear signage</option><option value="unsafe_crossing">Unsafe crossing</option><option value="other">Other</option></select></label>
+        <label><span class="mb-2 block text-sm font-black">Transport mode</span><select name="transport_mode" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="taxi">Taxi</option><option value="rail">Rail</option><option value="bus">Bus</option><option value="boat">Boat</option><option value="walk">Walking infrastructure</option></select></label>
+        <label><span class="mb-2 block text-sm font-black">Plate / vehicle / train ID</span><input name="vehicle_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="1กข 1234, BTS car no., bus route" /></label>
+        <label><span class="mb-2 block text-sm font-black">Incident time</span><div class="flex gap-2"><input id="incidentTime" name="incident_time" type="datetime-local" class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /><button id="useNow" type="button" class="rounded-2xl bg-transit-mint px-4 font-black text-transit-teal">Now</button></div></label>
+        <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Location label</span><input name="location_label" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Wat Mangkon Exit 1, Yaowarat Road" /></label>
+        <input name="latitude" type="hidden" value="13.7563" /><input name="longitude" type="hidden" value="100.5018" />
+        <label><span class="mb-2 block text-sm font-black">Severity</span><select name="severity" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+        <label><span class="mb-2 block text-sm font-black">Optional photo evidence</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" /></label>
+        <label class="lg:col-span-2"><span class="mb-2 block text-sm font-black">Description</span><textarea name="description" minlength="5" maxlength="2000" class="min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-semibold outline-none" placeholder="Add clear context: location, fare requested, vehicle number, staff behavior, signage issue..." required></textarea></label>
+        <label><span class="mb-2 block text-sm font-black">Name</span><input name="reporter_name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
+        <label><span class="mb-2 block text-sm font-black">Contact</span><input name="contact" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold outline-none" placeholder="Optional" /></label>
+        <button class="rounded-2xl bg-gradient-to-br from-transit-teal to-transit-blue px-5 py-4 font-black text-white shadow-card lg:col-span-2">Submit Smart Report</button>
+        <p id="message" class="text-sm font-bold text-slate-500 lg:col-span-2"></p>
+      </form>
     </aside>
     <script src="/app.js"></script>
   </body>

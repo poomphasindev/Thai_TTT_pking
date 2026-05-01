@@ -4,6 +4,8 @@ const $$ = (selector) => document.querySelectorAll(selector);
 const state = {
   lang: localStorage.getItem("lang") || "en",
   mode: "rail",
+  placeCategory: "food",
+  user: null,
   activeTicketId: localStorage.getItem("activeTicketId"),
   map: null,
   markers: [],
@@ -29,14 +31,14 @@ const copy = {
     stops: "Stops",
     saved: "Saved",
     fareBreakdown: "Receipt-style fare breakdown",
-    routeDetails: "Route details",
+    routeDetails: "Step-by-step journey",
     exploreAround: "Explore around destination",
     touristContext: "Tourist context",
     wowFactor: "The wow factor",
     ticketTitle: "3D Holographic Joint Ticket",
-    generateTicket: "Generate ticket",
+    generateTicket: "Issue my Joint Ticket",
     reportTitle: "Report a transit issue",
-    reportBody: "No Vision AI required. Provide clear manual evidence first.",
+    reportBody: "Manual-first reporting with category, place, time, vehicle ID, and photo evidence. Vision AI can be added later without changing this flow.",
   },
   th: {
     brandSub: "ระบบเดินทางท่องเที่ยวกรุงเทพฯ",
@@ -56,14 +58,14 @@ const copy = {
     stops: "สถานี",
     saved: "ประหยัด",
     fareBreakdown: "รายละเอียดค่าโดยสารแบบใบเสร็จ",
-    routeDetails: "รายละเอียดเส้นทาง",
+    routeDetails: "ลำดับการเดินทาง",
     exploreAround: "สำรวจรอบจุดหมาย",
     touristContext: "บริบทสำหรับนักท่องเที่ยว",
     wowFactor: "ฟีเจอร์เด่น",
     ticketTitle: "บัตรตั๋วร่วม 3D Holographic",
-    generateTicket: "ออกบัตรเดินทาง",
+    generateTicket: "ออกบัตรตั๋วร่วม",
     reportTitle: "แจ้งปัญหาการเดินทาง",
-    reportBody: "ใช้แบบ manual-first ก่อน ไม่ต้องพึ่ง Vision AI และให้หลักฐานครบถ้วน",
+    reportBody: "แจ้งแบบ manual-first เลือกหมวด ระบุสถานที่ เวลา เลขรถ และแนบรูปได้ ส่วน Vision AI เพิ่มต่อได้โดยไม่เปลี่ยน flow",
   },
 };
 
@@ -82,7 +84,7 @@ const landmarks = [
     id: "wat-arun",
     en: "Wat Arun",
     th: "วัดอรุณ",
-    node: "Pier N8",
+    node: "Tha Tien Pier / MRT Sanam Chai",
     lat: 13.7437,
     lng: 100.4889,
     image: "/assets/landmarks/wat-arun.jpg",
@@ -92,7 +94,7 @@ const landmarks = [
     id: "grand-palace",
     en: "Grand Palace",
     th: "พระบรมมหาราชวัง",
-    node: "Pier N9",
+    node: "MRT Sanam Chai / Pier N9",
     lat: 13.7500,
     lng: 100.4913,
     image: "/assets/landmarks/grand-palace.jpg",
@@ -112,7 +114,7 @@ const landmarks = [
     id: "iconsiam",
     en: "ICONSIAM",
     th: "ไอคอนสยาม",
-    node: "Pier CAT",
+    node: "Gold Line / Pier CAT",
     lat: 13.7266,
     lng: 100.5106,
     image: "/assets/generated/bangkok-map-preview.jpg",
@@ -132,43 +134,57 @@ const landmarks = [
 
 const routeModes = {
   rail: {
-    title: { en: "BTS + MRT to destination", th: "BTS + MRT ไปยังจุดหมาย" },
-    note: { en: "Fast, predictable, and protected by the Joint Ticket cap.", th: "เร็ว คาดการณ์ง่าย และจำลองเพดานตั๋วร่วม" },
-    time: 20,
-    stops: 9,
+    title: { en: "Rail-first route with gated transfer", th: "เส้นทางหลักด้วยรถไฟฟ้าและต่อระบบ" },
+    note: { en: "Best default for tourists: clear stations, short walking, and capped daily billing.", th: "เหมาะสุดสำหรับนักท่องเที่ยว: สถานีชัด เดินน้อย และมีเพดานค่าโดยสารรายวัน" },
+    time: 28,
+    stops: 8,
     fare: 49,
     total: 45,
     lines: [
-      { label: "BTS nearest station transfer", fare: 17 },
-      { label: "MRT / rail connection", fare: 32 },
+      { label: "BTS first segment", fare: 17 },
+      { label: "MRT / river connection", fare: 32 },
     ],
-    steps: ["Start at nearest BTS/MRT node", "Transfer at interchange", "Walk 4-8 min to landmark"],
+    steps: [
+      { icon: "1", title: "Start from origin node", th: "เริ่มจากสถานีต้นทาง", detail: "Walk to {originNode}. Keep the Joint Ticket ready before entering the paid area.", detailTh: "เดินไปที่ {originNode} เตรียมบัตรตั๋วร่วมก่อนเข้าสถานี" },
+      { icon: "2", title: "Scan QR at first gate", th: "สแกน QR ที่ประตูแรก", detail: "Show the live QR. Backend records operator, station, time, and charged fare.", detailTh: "แสดง QR แบบ live ระบบบันทึกผู้ให้บริการ สถานี เวลา และค่าโดยสารที่ถูกคิด" },
+      { icon: "3", title: "Transfer using the same pass", th: "ต่อระบบด้วยบัตรเดิม", detail: "At interchange, keep the same QR. The cap engine prevents charging over 45 THB today.", detailTh: "ตอนเปลี่ยนสายใช้ QR เดิม ระบบ cap จะไม่คิดเกิน 45 บาทต่อวัน" },
+      { icon: "4", title: "Arrive near landmark", th: "ถึงสถานีใกล้แลนด์มาร์ก", detail: "Exit at {destNode}, then follow the walking hint to {destination}.", detailTh: "ออกที่ {destNode} แล้วเดินต่อไปยัง {destination}" },
+    ],
   },
   bus: {
-    title: { en: "City bus + short walk", th: "รถเมล์ + เดินต่อ" },
-    note: { en: "Cheapest when traffic is light. Best for flexible tourists.", th: "ถูกที่สุดเมื่อรถไม่ติด เหมาะกับคนยืดหยุ่นเรื่องเวลา" },
-    time: 38,
+    title: { en: "Budget route with bus corridor", th: "เส้นทางประหยัดด้วยรถเมล์" },
+    note: { en: "Lower fare, but time varies with traffic. Useful when tourists are not in a rush.", th: "ถูกกว่าแต่เวลาแปรผันตามรถติด เหมาะเมื่อไม่รีบ" },
+    time: 42,
     stops: 12,
     fare: 24,
     total: 24,
     lines: [
       { label: "Air-conditioned city bus", fare: 24 },
-      { label: "Walk to landmark", fare: 0 },
+      { label: "Walking connection", fare: 0 },
     ],
-    steps: ["Board tourist-friendly bus corridor", "Track nearby stop", "Walk 5-10 min to landmark"],
+    steps: [
+      { icon: "1", title: "Walk to verified bus stop", th: "เดินไปป้ายรถเมล์ที่ตรวจสอบแล้ว", detail: "The app points to the stop closest to {originNode}.", detailTh: "แอพชี้ป้ายที่ใกล้ {originNode} ที่สุด" },
+      { icon: "2", title: "Board and show QR to staff", th: "ขึ้นรถและแสดง QR", detail: "The conductor can validate the pass or record a manual ticket ID.", detailTh: "กระเป๋ารถสามารถตรวจบัตรหรือบันทึก ticket ID แบบ manual ได้" },
+      { icon: "3", title: "Get off near destination cluster", th: "ลงใกล้โซนจุดหมาย", detail: "Use the map pins to walk from the stop to {destination}.", detailTh: "ใช้ pin บนแผนที่เดินจากป้ายไปยัง {destination}" },
+    ],
   },
   boat: {
-    title: { en: "Rail + Chao Phraya boat", th: "รถไฟฟ้า + เรือเจ้าพระยา" },
-    note: { en: "Most scenic for riverside landmarks and photo stops.", th: "วิวดีที่สุดสำหรับแลนด์มาร์กริมแม่น้ำและจุดถ่ายรูป" },
-    time: 42,
+    title: { en: "Scenic rail + Chao Phraya boat", th: "เส้นทางชมวิว รถไฟฟ้า + เรือเจ้าพระยา" },
+    note: { en: "Most photogenic for riverside landmarks. The fare cap still keeps the pitch story simple.", th: "เหมาะกับแลนด์มาร์กริมแม่น้ำและการถ่ายรูป โดยยังมีเพดานค่าโดยสารให้เล่า pitch ง่าย" },
+    time: 45,
     stops: 7,
     fare: 66,
     total: 45,
     lines: [
-      { label: "Rail to Saphan Taksin", fare: 45 },
+      { label: "Rail to river interchange", fare: 45 },
       { label: "Chao Phraya boat segment", fare: 21 },
     ],
-    steps: ["Take rail to Saphan Taksin", "Walk to Sathorn Pier", "Boat ride to river landmark"],
+    steps: [
+      { icon: "1", title: "Ride rail to river interchange", th: "นั่งรถไฟฟ้าไปจุดต่อเรือ", detail: "Use {originNode} to reach Saphan Taksin or Sanam Chai depending on destination.", detailTh: "ใช้ {originNode} ไปจุดต่อเรือ เช่น สะพานตากสินหรือสนามไชยตามจุดหมาย" },
+      { icon: "2", title: "Transfer to pier", th: "เดินต่อไปท่าเรือ", detail: "Follow pier signage. The app keeps the same ticket session active.", detailTh: "ตามป้ายไปท่าเรือ แอพยังใช้ session บัตรเดิมอยู่" },
+      { icon: "3", title: "Scan with boat operator", th: "สแกนกับผู้ให้บริการเรือ", detail: "Boat fare is added until the 45 THB cap is reached.", detailTh: "ค่าเรือจะถูกคิดรวมจนถึงเพดาน 45 บาท" },
+      { icon: "4", title: "Walk to landmark entrance", th: "เดินเข้าจุดหมาย", detail: "Exit at the nearest pier for {destination}.", detailTh: "ขึ้นจากท่าเรือที่ใกล้ {destination} ที่สุด" },
+    ],
   },
 };
 
@@ -207,6 +223,18 @@ function fillSelects() {
   $("#destinationSelect").value = oldDestination;
 }
 
+function hydrateStep(template, origin, dest) {
+  const title = state.lang === "th" ? template.th : template.title;
+  const detail = state.lang === "th" ? template.detailTh : template.detail;
+  return {
+    title,
+    detail: detail
+      .replaceAll("{originNode}", origin.node)
+      .replaceAll("{destNode}", dest.node)
+      .replaceAll("{destination}", localName(dest)),
+  };
+}
+
 function renderRoute() {
   const mode = routeModes[state.mode];
   const origin = currentOrigin();
@@ -215,7 +243,7 @@ function renderRoute() {
   $("#routeTitle").textContent = `${localName(origin)} → ${localName(dest)}`;
   $("#routeNote").textContent = mode.note[state.lang];
   $("#routeTime").textContent = `~${mode.time} ${state.lang === "th" ? "นาที" : "min"}`;
-  $("#routeStops").textContent = `${mode.stops} ${state.lang === "th" ? "สถานี" : "stops"}`;
+  $("#routeStops").textContent = `${mode.stops} ${state.lang === "th" ? "จุด/สถานี" : "nodes"}`;
   $("#routeSaved").textContent = `${saved} THB`;
   $("#finalFare").textContent = `${mode.total}฿`;
   $("#ticketOrigin").value = origin.en;
@@ -223,17 +251,23 @@ function renderRoute() {
 
   $("#farePanel").innerHTML = `
     <div class="space-y-3 text-sm font-semibold">
-      ${mode.lines.map((line) => `<div class="flex justify-between"><span>${line.label}</span><span>${line.fare} THB</span></div>`).join("")}
-      <div class="border-t border-dashed border-slate-300 pt-3 flex justify-between text-slate-500"><span>Subtotal</span><span>${mode.fare} THB</span></div>
-      <div class="rounded-2xl bg-amber-100 px-4 py-3 flex justify-between font-black text-amber-800"><span>✨ Joint Ticket Cap Applied</span><span>-${saved} THB</span></div>
+      ${mode.lines.map((line) => `<div class="flex justify-between gap-4"><span>${line.label}</span><span>${line.fare} THB</span></div>`).join("")}
+      <div class="border-t border-dashed border-slate-300 pt-3 flex justify-between text-slate-500"><span>Subtotal without policy cap</span><span>${mode.fare} THB</span></div>
+      <div class="rounded-2xl bg-amber-100 px-4 py-3 flex justify-between gap-4 font-black text-amber-800"><span>Joint Ticket Cap Applied</span><span>-${saved} THB</span></div>
       <div class="flex items-end justify-between pt-1"><span class="text-base font-black">Total billed today</span><span class="text-3xl font-black text-transit-teal">${mode.total} THB</span></div>
     </div>`;
 
-  $("#routeSteps").innerHTML = mode.steps.map((step, index) => `
-    <div class="flex gap-3 rounded-2xl bg-white p-3 shadow-sm">
-      <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-transit-mint text-sm font-black text-transit-teal">${index + 1}</div>
-      <div><p class="font-black">${step}</p><p class="text-sm font-semibold text-slate-500">${index === 2 ? dest.context[state.lang] : "Fare/time simulation for pitch-safe routing."}</p></div>
-    </div>`).join("");
+  $("#routeSteps").innerHTML = mode.steps.map((step, index) => {
+    const rendered = hydrateStep(step, origin, dest);
+    return `
+      <div class="flex gap-3 rounded-2xl bg-white p-3 shadow-sm">
+        <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full ${index === 1 ? "bg-transit-ink text-white" : "bg-transit-mint text-transit-teal"} text-sm font-black">${step.icon}</div>
+        <div>
+          <p class="font-black">${rendered.title}</p>
+          <p class="mt-1 text-sm font-semibold leading-6 text-slate-500">${rendered.detail}</p>
+        </div>
+      </div>`;
+  }).join("");
 
   $$(".mode-btn").forEach((button) => {
     const active = button.dataset.mode === state.mode;
@@ -251,43 +285,99 @@ function initMap() {
       container: "map",
       style: "https://tiles.openfreemap.org/styles/liberty",
       center: [dest.lng, dest.lat],
-      zoom: 13.5,
+      zoom: 14,
       attributionControl: false,
     });
     state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    state.map.on("load", () => renderExplore());
-    state.map.on("error", () => $("#map").classList.add("hidden"));
+    state.map.on("load", () => {
+      $("#mapFallback").classList.add("opacity-0");
+      renderExplore();
+    });
+    state.map.on("error", () => $("#mapFallback").classList.remove("opacity-0"));
   } catch {
-    $("#map").classList.add("hidden");
+    $("#mapFallback").classList.remove("opacity-0");
   }
 }
 
-function renderExplore() {
+async function renderExplore() {
   const dest = currentDestination();
   $("#exploreTitle").textContent = `${localName(dest)} area`;
   $("#mapContext").textContent = dest.context[state.lang];
   $("#mapFallback").src = dest.image;
-  const nearby = [dest, ...landmarks.filter((place) => place.id !== dest.id).slice(0, 4)];
-  $("#poiCarousel").innerHTML = nearby.map((place, index) => `
-    <article class="min-w-[250px] overflow-hidden rounded-[1.75rem] bg-white shadow-card">
-      <img class="h-36 w-full object-cover" src="${place.image}" alt="${place.en}" />
-      <div class="p-4">
-        <span class="rounded-full ${index === 0 ? "bg-transit-mint text-transit-teal" : "bg-blue-100 text-transit-blue"} px-3 py-1 text-xs font-black">${index === 0 ? "Destination" : "Nearby"}</span>
-        <h3 class="mt-3 text-lg font-black">${localName(place)}</h3>
-        <p class="mt-1 text-sm font-semibold text-slate-500">${place.node} · ${place.context[state.lang]}</p>
-      </div>
-    </article>`).join("");
+  updatePlaceChips();
+
+  const fallback = landmarks.filter((place) => place.id !== dest.id).slice(0, 4).map((place) => ({
+    id: place.id,
+    name: localName(place),
+    latitude: place.lat,
+    longitude: place.lng,
+    kind: place.node,
+    source: "Curated Bangkok landmark",
+    distance_m: null,
+    image: place.image,
+  }));
+  const places = await loadPlaces(dest, fallback);
+  renderPoiCards([{ id: dest.id, name: localName(dest), latitude: dest.lat, longitude: dest.lng, kind: dest.node, source: "Selected destination", image: dest.image }, ...places]);
+}
+
+async function loadPlaces(dest, fallback) {
+  try {
+    const url = `/api/places/nearby?lat=${dest.lat}&lng=${dest.lng}&category=${state.placeCategory}&radius=1200`;
+    const places = await request(url);
+    return places.length ? places : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function renderPoiCards(places) {
+  $("#poiCarousel").innerHTML = places.map((place, index) => {
+    const image = place.image || imageForCategory(state.placeCategory, index);
+    const label = index === 0 ? "Destination" : place.source === "OpenStreetMap" ? "OSM verified" : place.source;
+    const distance = place.distance_m ? ` · ${place.distance_m}m` : "";
+    return `
+      <article class="min-w-[250px] overflow-hidden rounded-[1.75rem] bg-white shadow-card">
+        <img class="h-36 w-full object-cover" src="${image}" alt="${escapeHtml(place.name)}" />
+        <div class="p-4">
+          <span class="rounded-full ${index === 0 ? "bg-transit-mint text-transit-teal" : "bg-blue-100 text-transit-blue"} px-3 py-1 text-xs font-black">${label}</span>
+          <h3 class="mt-3 text-lg font-black">${escapeHtml(place.name)}</h3>
+          <p class="mt-1 text-sm font-semibold text-slate-500">${escapeHtml(place.kind || "POI")}${distance}</p>
+          <p class="mt-2 text-xs font-bold text-slate-400">Ratings can be upgraded with Google Places key.</p>
+        </div>
+      </article>`;
+  }).join("");
 
   if (state.map) {
     state.markers.forEach((marker) => marker.remove());
-    state.markers = nearby.map((place, index) => {
+    state.markers = places.map((place, index) => {
       const el = document.createElement("div");
       el.className = `map-marker ${index === 0 ? "active" : ""}`;
-      el.textContent = index === 0 ? "★" : "•";
-      return new maplibregl.Marker({ element: el }).setLngLat([place.lng, place.lat]).addTo(state.map);
+      el.textContent = index === 0 ? "★" : String(index);
+      return new maplibregl.Marker({ element: el }).setLngLat([place.longitude, place.latitude]).addTo(state.map);
     });
+    const dest = currentDestination();
     state.map.flyTo({ center: [dest.lng, dest.lat], zoom: 14, essential: false });
   }
+}
+
+function imageForCategory(category, index) {
+  const images = {
+    food: ["/assets/landmarks/yaowarat.jpg", "/assets/generated/bangkok-brochure-th-cover.jpg"],
+    shopping: ["/assets/generated/bangkok-map-preview.jpg", "/assets/generated/bangkok-brochure-en-cover.jpg"],
+    attractions: ["/assets/landmarks/wat-arun.jpg", "/assets/landmarks/grand-palace.jpg"],
+    transport: ["/assets/generated/bangkok-map-preview.jpg", "/assets/landmarks/yaowarat.jpg"],
+  };
+  return images[category][index % images[category].length];
+}
+
+function updatePlaceChips() {
+  $$(".place-chip").forEach((button) => {
+    const active = button.dataset.placeCategory === state.placeCategory;
+    button.classList.toggle("bg-transit-ink", active);
+    button.classList.toggle("text-white", active);
+    button.classList.toggle("bg-slate-100", !active);
+    button.classList.toggle("text-slate-600", !active);
+  });
 }
 
 function wireEvents() {
@@ -304,11 +394,16 @@ function wireEvents() {
   });
   $("#planRouteBtn").addEventListener("click", () => {
     $("#farePanel").classList.remove("hidden");
-    document.querySelector("#fareChevron").classList.add("rotate-180");
+    $("#fareChevron").classList.add("rotate-180");
+    $("#routeSteps").scrollIntoView({ behavior: "smooth", block: "center" });
   });
   $$(".mode-btn").forEach((button) => button.addEventListener("click", () => {
     state.mode = button.dataset.mode;
     renderRoute();
+  }));
+  $$(".place-chip").forEach((button) => button.addEventListener("click", () => {
+    state.placeCategory = button.dataset.placeCategory;
+    renderExplore();
   }));
   $("#fareToggle").addEventListener("click", () => {
     $("#farePanel").classList.toggle("hidden");
@@ -321,7 +416,16 @@ function wireEvents() {
     $("#tapToUseBtn").textContent = shell.classList.contains("flipped") ? "Hide QR" : "Tap to Use";
   });
 
+  $("#authButton").addEventListener("click", openAuthSheet);
+  $("#closeAuthSheet").addEventListener("click", closeSheets);
+  $("#authForm").addEventListener("submit", submitAuth);
+  $("#logoutBtn").addEventListener("click", logout);
   $("#ticketForm").addEventListener("submit", submitTicket);
+
+  $("#openReportBtn").addEventListener("click", openReportSheet);
+  $("#navReportBtn").addEventListener("click", openReportSheet);
+  $("#mobileReportBtn").addEventListener("click", openReportSheet);
+  $("#closeReportSheet").addEventListener("click", closeSheets);
   $("#reportForm").addEventListener("submit", submitReport);
   $("#useNow").addEventListener("click", () => {
     const now = new Date();
@@ -329,15 +433,59 @@ function wireEvents() {
     $("#incidentTime").value = local.toISOString().slice(0, 16);
   });
 
-  $("#aiFab").addEventListener("click", openSheet);
-  $("#closeSheet").addEventListener("click", closeSheet);
-  $("#sheetOverlay").addEventListener("click", closeSheet);
+  $("#aiFab").addEventListener("click", openAiSheet);
+  $("#closeSheet").addEventListener("click", closeSheets);
+  $("#sheetOverlay").addEventListener("click", closeSheets);
   $("#chatForm").addEventListener("submit", sendChat);
+}
+
+async function loadMe() {
+  try {
+    state.user = await request("/api/auth/me");
+  } catch {
+    state.user = null;
+  }
+  renderAuthState();
+}
+
+function renderAuthState() {
+  const label = state.user ? state.user.display_name.split(" ")[0] : "Sign in";
+  $("#authButton").textContent = label;
+  $("#authMessage").textContent = state.user ? `Signed in as ${state.user.email}` : "";
+  $("#logoutBtn").classList.toggle("hidden", !state.user);
+}
+
+async function submitAuth(event) {
+  event.preventDefault();
+  $("#authMessage").textContent = "Signing in...";
+  try {
+    state.user = await request("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget).entries())),
+    });
+    renderAuthState();
+    $("#authMessage").textContent = "Ready. You can issue a Joint Ticket now.";
+    setTimeout(closeSheets, 450);
+  } catch (error) {
+    $("#authMessage").textContent = error.message;
+  }
+}
+
+async function logout() {
+  await fetch("/api/auth/logout", { method: "POST" });
+  state.user = null;
+  renderAuthState();
 }
 
 async function submitTicket(event) {
   event.preventDefault();
-  $("#ticketMessage").textContent = "Generating ticket...";
+  if (!state.user) {
+    $("#ticketMessage").textContent = "Sign in first so the ticket has an owner.";
+    openAuthSheet();
+    return;
+  }
+  $("#ticketMessage").textContent = "Issuing secure ticket...";
   try {
     const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
     const ticket = await request("/api/tickets", {
@@ -348,7 +496,7 @@ async function submitTicket(event) {
     state.activeTicketId = ticket.id;
     localStorage.setItem("activeTicketId", ticket.id);
     renderTicket(ticket);
-    $("#ticketMessage").textContent = "Ticket ready. Tap to show QR.";
+    $("#ticketMessage").textContent = "Ticket ready. Tap to show QR to operator.";
   } catch (error) {
     $("#ticketMessage").textContent = error.message;
   }
@@ -369,9 +517,12 @@ async function submitReport(event) {
   event.preventDefault();
   $("#message").textContent = "Submitting report...";
   try {
+    const dest = currentDestination();
+    event.currentTarget.elements.latitude.value = dest.lat;
+    event.currentTarget.elements.longitude.value = dest.lng;
     const payload = await request("/api/reports", { method: "POST", body: new FormData(event.currentTarget) });
     event.currentTarget.reset();
-    $("#message").textContent = `Report submitted: ${payload.id.slice(0, 8).toUpperCase()}`;
+    $("#message").textContent = `Report submitted: ${payload.id.slice(0, 8).toUpperCase()}. Ops can review it in the dashboard.`;
   } catch (error) {
     $("#message").textContent = error.message;
   }
@@ -394,16 +545,31 @@ function startCountdown() {
   }, 1000);
 }
 
-function openSheet() {
-  $("#aiSheet").classList.add("open");
+function openAuthSheet() {
+  openSheet("#authSheet");
+}
+
+function openAiSheet() {
+  openSheet("#aiSheet");
+}
+
+function openReportSheet() {
+  openSheet("#reportSheet");
+}
+
+function openSheet(selector) {
+  closeSheets(false);
+  $(selector).classList.add("open");
   $("#sheetOverlay").classList.remove("pointer-events-none", "bg-slate-950/0");
   $("#sheetOverlay").classList.add("bg-slate-950/35");
 }
 
-function closeSheet() {
-  $("#aiSheet").classList.remove("open");
-  $("#sheetOverlay").classList.add("pointer-events-none", "bg-slate-950/0");
-  $("#sheetOverlay").classList.remove("bg-slate-950/35");
+function closeSheets(hideOverlay = true) {
+  $$(".bottom-sheet").forEach((sheet) => sheet.classList.remove("open"));
+  if (hideOverlay) {
+    $("#sheetOverlay").classList.add("pointer-events-none", "bg-slate-950/0");
+    $("#sheetOverlay").classList.remove("bg-slate-950/35");
+  }
 }
 
 function sendChat(event) {
@@ -414,7 +580,8 @@ function sendChat(event) {
   $("#chatLog").insertAdjacentHTML("beforeend", `<div class="ml-auto max-w-[86%] rounded-3xl rounded-br-md bg-transit-teal px-4 py-3 text-sm font-semibold leading-6 text-white">${escapeHtml(value)}</div>`);
   input.value = "";
   setTimeout(() => {
-    $("#chatLog").insertAdjacentHTML("beforeend", `<div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">For this Bangkok pilot, I recommend ${routeModes[state.mode].title.en}. Your fare remains protected by the 45 THB cap simulation.</div>`);
+    const mode = routeModes[state.mode];
+    $("#chatLog").insertAdjacentHTML("beforeend", `<div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">For this Bangkok pilot, I recommend ${mode.title.en}. Start at ${currentOrigin().node}, keep the Joint Ticket QR ready, and your daily billing stays within the 45 THB cap simulation.</div>`);
     $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
   }, 360);
 }
@@ -437,4 +604,5 @@ wireEvents();
 applyLanguage();
 initMap();
 startCountdown();
+loadMe();
 loadExistingTicket();
