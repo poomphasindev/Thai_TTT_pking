@@ -1054,6 +1054,24 @@ textarea:focus {
   font-weight: 800;
 }
 
+.ai-answer-card {
+  overflow-wrap: anywhere;
+}
+
+.ai-answer-content {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-answer-content p {
+  margin: 0;
+}
+
+.ai-answer-content strong,
+.ai-answer-content b {
+  color: var(--primary-dark);
+}
+
 .admin-main {
   padding-bottom: 60px;
 }

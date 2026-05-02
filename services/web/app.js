@@ -1214,9 +1214,9 @@ async function sendChat(event) {
   const input = $("#chatInput");
   const value = input.value.trim();
   if (!value) return;
-  $("#chatLog").insertAdjacentHTML("beforeend", `<div class="ml-auto max-w-[86%] rounded-3xl rounded-br-md bg-transit-teal px-4 py-3 text-sm font-semibold leading-6 text-white">${escapeHtml(value)}</div>`);
+  $("#chatLog").insertAdjacentHTML("beforeend", `<div class="ml-auto max-w-[78%] rounded-3xl rounded-br-md bg-transit-teal px-4 py-3 text-sm font-semibold leading-6 text-white shadow-lg shadow-teal-900/10">${escapeHtml(value)}</div>`);
   input.value = "";
-  $("#chatLog").insertAdjacentHTML("beforeend", `<div id="typingBubble" class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-500">Thinking with route context...</div>`);
+  $("#chatLog").insertAdjacentHTML("beforeend", `<div id="typingBubble" class="max-w-full rounded-3xl rounded-bl-md bg-slate-100 px-5 py-4 text-sm font-semibold leading-7 text-slate-500"><span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-transit-teal">Sawasdee AI is reading trip context</span>Thinking with destination, fare cap, transfer steps, and safety signals...</div>`);
   $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
   try {
     const answer = await request("/api/copilot/ask", {
@@ -1244,11 +1244,21 @@ function copilotPayload(question) {
 }
 
 function appendAiAnswer(answer, suggestionsList) {
-  $("#chatLog").insertAdjacentHTML("beforeend", `<div class="max-w-[86%] rounded-3xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">${escapeHtml(answer).replace(/\n/g, "<br>")}</div>`);
+  const destination = escapeHtml(localName(currentDestination()));
+  $("#chatLog").insertAdjacentHTML("beforeend", `<article class="ai-answer-card max-w-full rounded-3xl rounded-bl-md bg-slate-100 px-5 py-4 text-sm font-semibold leading-7 text-slate-700 shadow-sm ring-1 ring-slate-200/70"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><span class="rounded-full bg-transit-mint px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-transit-teal">AI route brief</span><span class="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-500">Context: ${destination}</span></div><div class="ai-answer-content">${formatAiAnswer(answer)}</div></article>`);
   if (suggestionsList?.length) {
-    $("#chatLog").insertAdjacentHTML("beforeend", `<div class="flex max-w-[92%] flex-wrap gap-2">${suggestionsList.map((item) => `<button class="suggestion rounded-full bg-white px-3 py-2 text-xs font-black text-transit-teal shadow-sm" data-prompt="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("")}</div>`);
+    $("#chatLog").insertAdjacentHTML("beforeend", `<div class="flex max-w-full flex-wrap gap-2">${suggestionsList.map((item) => `<button class="suggestion rounded-full bg-white px-3 py-2 text-xs font-black text-transit-teal shadow-sm ring-1 ring-slate-200" data-prompt="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("")}</div>`);
   }
   $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
+}
+
+function formatAiAnswer(answer) {
+  const safe = escapeHtml(answer).trim();
+  if (!safe) return "";
+  return safe
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br>")}</p>`)
+    .join("");
 }
 
 function askSuggested(prompt) {
