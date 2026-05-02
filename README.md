@@ -45,6 +45,8 @@ Working:
 - Detailed leg timeline showing board/validate/transfer/exit logic for tourist landmarks
 - City intelligence admin dashboard with OD demand, missed-transfer, QR failure, feeder-gap, and safety signals
 - Copilot context chip and more flexible destination-aware Gemini responses
+- Gemini response budget increased with continuation handling for longer, complete answers
+- Vercel serverless entrypoint and routing config for preview deployment
 
 Reserved for next sprint:
 
@@ -298,6 +300,22 @@ Current implementation:
 ## Deployment Notes
 
 SQLite is good for local development, hackathon demos, and a single long-running FastAPI process.
+
+This repository includes Vercel preview support:
+
+- `api/index.py` exposes the FastAPI `app`
+- `vercel.json` routes all paths to the FastAPI app
+- root `requirements.txt` is provided for Vercel Python dependency install
+- when `VERCEL=1`, SQLite and uploads default to `/tmp/sawasdee-transit/*`
+
+Set these environment variables in Vercel Project Settings:
+
+```env
+TTM_GEMINI_API_KEY=your_google_ai_studio_key
+TTM_PUBLIC_BASE_URL=https://your-vercel-domain.vercel.app
+```
+
+Important: Vercel `/tmp` storage is ephemeral. It is fine for judges to try the prototype, but data can reset between cold starts.
 
 For Vercel-style serverless deployment, SQLite files are not a reliable persistent database because serverless instances can be ephemeral and concurrent writes are not ideal. The recommended production upgrade is:
 

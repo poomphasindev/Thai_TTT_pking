@@ -7,6 +7,9 @@ const refresh = document.querySelector("#refresh");
 const walletTopupForm = document.querySelector("#walletTopupForm");
 const walletAdminMessage = document.querySelector("#walletAdminMessage");
 const cityInsightList = document.querySelector("#cityInsightList");
+const routeHealthBars = document.querySelector("#routeHealthBars");
+const scanStream = document.querySelector("#scanStream");
+const aiOpsList = document.querySelector("#aiOpsList");
 
 let cachedReports = [];
 let cachedTickets = [];
@@ -66,12 +69,36 @@ const mockCityInsights = [
   },
 ];
 
+const mockRouteHealth = [
+  { corridor: "Siam → Wat Arun", demand: 92, issue: "Pier transfer confusion", risk: "high" },
+  { corridor: "Siam → Yaowarat", demand: 78, issue: "Crowding after 18:30", risk: "medium" },
+  { corridor: "Saphan Taksin → ICONSIAM", demand: 64, issue: "Boat direction questions", risk: "medium" },
+  { corridor: "Sanam Chai → Grand Palace", demand: 58, issue: "Heat / long walk recovery", risk: "medium" },
+  { corridor: "Mo Chit → Chatuchak", demand: 43, issue: "Weekend-only expectation", risk: "low" },
+];
+
+const mockScanStream = [
+  { time: "10:12:08", mode: "MRT", place: "Sanam Chai exit", charge: "32 THB", status: "ok" },
+  { time: "10:16:44", mode: "Pier", place: "Tha Tien staff scan", charge: "13 THB", status: "cap reached" },
+  { time: "10:23:11", mode: "AI", place: "Wrong bus recovery", charge: "0 THB", status: "re-plan" },
+  { time: "10:31:02", mode: "Bus", place: "Rattanakosin feeder", charge: "16 THB", status: "ok" },
+  { time: "10:37:20", mode: "Report", place: "QR validator failed", charge: "-", status: "review" },
+];
+
+const mockAiOps = [
+  { title: "Lost tourist recovery", body: "Turns a vague message into nearest safe stop, next vehicle, QR instruction, and fare impact." },
+  { title: "Fare audit explanation", body: "Explains why a scan charged 0, 13, 16, or 32 THB and how the remaining cap is calculated." },
+  { title: "Incident triage", body: "Converts tourist text into category, mode, vehicle ID, severity, and admin action." },
+  { title: "Feeder planning signal", body: "Aggregates repeated re-plans into corridors that may need clearer signage or a short EV feeder." },
+];
+
 async function loadAll() {
   const [reports, tickets] = await Promise.all([loadReports(), loadTickets()]);
   cachedReports = reports;
   cachedTickets = tickets;
   renderStats(reports, tickets);
   renderCityInsights(reports, tickets);
+  renderCommandCenter(reports, tickets);
   if (selectedReportId) renderDetail(reports.find((report) => report.id === selectedReportId));
 }
 
@@ -144,6 +171,52 @@ function renderCityInsights(reports, tickets) {
       <p>${escapeHtml(item.action)}</p>
     </article>
   `).join("");
+}
+
+function renderCommandCenter(reports, tickets) {
+  routeHealthBars.innerHTML = mockRouteHealth.map((row) => `
+    <article class="route-health-row ${row.risk}">
+      <div>
+        <strong>${escapeHtml(row.corridor)}</strong>
+        <small>${escapeHtml(row.issue)}</small>
+      </div>
+      <div class="bar-track"><span style="width:${row.demand}%"></span></div>
+      <b>${row.demand}</b>
+    </article>
+  `).join("");
+
+  const ticketSignals = tickets.slice(0, 2).map((ticket) => ({
+    time: new Date(ticket.updated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    mode: "Ticket",
+    place: `${ticket.origin} → ${ticket.destination}`,
+    charge: `${ticket.accumulated_fare_thb}/45`,
+    status: ticket.status,
+  }));
+  scanStream.innerHTML = [...ticketSignals, ...mockScanStream].slice(0, 7).map((item) => `
+    <article class="scan-row">
+      <span>${escapeHtml(item.time)}</span>
+      <strong>${escapeHtml(item.mode)}</strong>
+      <p>${escapeHtml(item.place)}</p>
+      <b>${escapeHtml(item.charge)}</b>
+      <em>${escapeHtml(item.status)}</em>
+    </article>
+  `).join("");
+
+  const guidanceIssues = reports.filter((report) => ["wrong_vehicle_guidance", "missed_transfer", "qr_scan_failed"].includes(report.category)).length;
+  aiOpsList.innerHTML = mockAiOps.map((item, index) => `
+    <article>
+      <span>0${index + 1}</span>
+      <div>
+        <strong>${escapeHtml(item.title)}</strong>
+        <p>${escapeHtml(item.body)}</p>
+      </div>
+    </article>
+  `).join("") + `
+    <div class="ai-ops-meter">
+      <span>Today AI-relevant cases</span>
+      <strong>${guidanceIssues + 23}</strong>
+      <small>mock + live report categories</small>
+    </div>`;
 }
 
 function renderReport(report) {

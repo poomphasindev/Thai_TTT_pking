@@ -44,6 +44,35 @@
         <article class="stat-card"><span>Fare protected</span><strong id="fareProtected">0 THB</strong><small>Current cap usage</small></article>
       </section>
 
+      <section class="ops-command-grid" aria-label="Realtime operational overview">
+        <article class="surface command-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Realtime route health</p>
+              <h2>Where tourists get stuck</h2>
+            </div>
+            <span class="live-pill">Live simulation</span>
+          </div>
+          <div id="routeHealthBars" class="route-health-bars"></div>
+        </article>
+
+        <article class="surface command-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Scan settlement stream</p>
+              <h2>Latest QR validations</h2>
+            </div>
+          </div>
+          <div id="scanStream" class="scan-stream"></div>
+        </article>
+
+        <article class="surface command-panel ai-ops-panel">
+          <p class="eyebrow">AI operations layer</p>
+          <h2>What LLM is doing for the city</h2>
+          <div id="aiOpsList" class="ai-ops-list"></div>
+        </article>
+      </section>
+
       <section class="surface city-intel" aria-label="City intelligence insights">
         <div class="section-head">
           <div>

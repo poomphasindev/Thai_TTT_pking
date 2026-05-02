@@ -66,6 +66,12 @@ const copy = {
     aiContextBody: "Food, etiquette, safety, opening hints.",
     aiFare: "Fare proof",
     aiFareBody: "Why this scan costs what it costs.",
+    aiRecoveryTitle: "Recovery planner",
+    aiRecoveryBody: "Re-plan from current location when a tourist boards the wrong vehicle.",
+    aiFareAuditTitle: "Fare auditor",
+    aiFareAuditBody: "Explain every scan and show remaining charge before the 45 THB cap.",
+    aiReportTitle: "Report assistant",
+    aiReportBody: "Draft structured incident reports from tourist text and trip context.",
     ragPreview: "RAG answer preview",
     arrivalBriefTitle: "Destination arrival brief",
     askAiStop: "Ask Sawasdee AI about this stop",
@@ -156,6 +162,12 @@ const copy = {
     aiContextBody: "อาหาร มารยาท ความปลอดภัย เวลาเปิด",
     aiFare: "เหตุผลค่าโดยสาร",
     aiFareBody: "สแกนนี้คิดเงินเท่าไร เพราะอะไร",
+    aiRecoveryTitle: "วางแผนเมื่อหลงทาง",
+    aiRecoveryBody: "ใช้ตำแหน่งปัจจุบันช่วย re-plan เมื่อขึ้นผิดคันหรือเลยจุดต่อรถ",
+    aiFareAuditTitle: "ตรวจสอบค่าโดยสาร",
+    aiFareAuditBody: "อธิบายทุก scan และยอดที่เหลือก่อนชนเพดาน 45 บาท",
+    aiReportTitle: "ช่วยร่างรายงาน",
+    aiReportBody: "แปลงข้อความนักท่องเที่ยวเป็นรายงานปัญหาแบบมีโครงสร้าง",
     ragPreview: "ตัวอย่างคำตอบ RAG",
     arrivalBriefTitle: "สรุปเมื่อถึงปลายทาง",
     askAiStop: "ถาม Sawasdee AI เกี่ยวกับจุดนี้",
@@ -580,9 +592,11 @@ function renderRouteChoices(routes) {
     const active = state.routeChoice === key;
     return `
       <button data-route-choice="${key}" class="route-choice-card ${active ? "active" : ""}">
-        <span>${label}</span>
-        <strong>${route.time} ${state.lang === "th" ? "นาที" : "min"} · ${route.fare} THB</strong>
+        <span class="choice-kicker">${active ? "Selected route" : "Choose route"}</span>
+        <strong>${label}</strong>
+        <em>${route.time} ${state.lang === "th" ? "นาที" : "min"} · ${route.fare} THB</em>
         <small>${escapeHtml(state.lang === "th" ? route.thConfidence : route.confidence)} · ${route.modes.join(" + ")}</small>
+        <b>${active ? (state.lang === "th" ? "กำลังแสดงรายละเอียดนี้" : "Details shown below") : (state.lang === "th" ? "กดเพื่อเปลี่ยนเส้นทาง" : "Tap to switch")}</b>
       </button>`;
   }).join("");
 }
@@ -1245,8 +1259,8 @@ function askSuggested(prompt) {
 
 function renderQuickPrompts() {
   const prompts = state.lang === "th"
-    ? ["ต้องสแกน QR ตรงไหน?", "ถ้าฉันแวะกลางทางจะคิดเงินยังไง?", "ถึงปลายทางแล้วออกทางไหน?"]
-    : ["Where do I scan QR?", "If I stop midway, how is fare charged?", "Which exit should I use after arrival?"];
+    ? ["ฉันหลงทางระหว่างต่อรถ ควรทำยังไง?", "ช่วย audit ค่าโดยสารของทริปนี้ให้หน่อย", "ช่วยร่างรายงาน QR สแกนไม่ได้ที่ท่าเรือ", "ถึงปลายทางแล้วออกทางไหน?"]
+    : ["I am lost during transfer. What should I do?", "Audit the fare for this trip", "Draft a QR scan failure report at the pier", "Which exit should I use after arrival?"];
   $("#quickPrompts").innerHTML = prompts.map((prompt) => `<button data-prompt="${escapeHtml(prompt)}" class="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-600">${escapeHtml(prompt)}</button>`).join("");
 }
 

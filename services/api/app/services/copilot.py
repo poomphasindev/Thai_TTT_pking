@@ -10,6 +10,7 @@ from app.models import CopilotAnswer, CopilotAsk
 
 GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+GEMINI_MAX_OUTPUT_TOKENS = 2048
 
 DOMAIN_KEYWORDS = {
     "route",
@@ -111,6 +112,11 @@ Destination: {payload.destination}
 Destination facts: {fact}
 Selected mode: {payload.mode}
 Fare state: billed {payload.fare_billed_thb}/{payload.fare_cap_thb} THB, remaining charge before cap {remaining} THB.
+Copilot capabilities to demonstrate:
+- recovery planner: turn "I am lost" into next safe station/pier/stop, QR instruction, and fare impact.
+- fare explainer: explain why each scan was charged and how the cap protects the passenger.
+- local brief: combine arrival exit, etiquette, safety, opening-hour caution, nearby POI hints.
+- report assistant: help phrase a transit issue report with mode, vehicle ID, time, and location.
 Journey model:
 1. Choose destination landmark.
 2. Walk to the recommended station, pier, or feeder stop.
@@ -235,10 +241,10 @@ async def ask_copilot(payload: CopilotAsk) -> CopilotAnswer:
 Instruction:
 - {language_rule}
 - Answer the user's actual intent. Be flexible: if they ask opening hours, answer opening-hours guidance; if etiquette, answer etiquette; if QR, answer QR workflow; if app logic, explain the app.
-- Thai answers should usually be 300-850 Thai characters unless the user only greets you. English answers should usually be 90-190 words.
+- Thai answers should usually be 450-1,200 Thai characters unless the user only greets you. English answers should usually be 120-240 words.
 - Use compact bullets only when helpful. Do not force every answer into the same template.
 - Include route/fare/QR context only when relevant to the question.
-- Be practical and complete. Finish every sentence.
+- Be practical and complete. Finish every sentence. Never stop mid-word or mid-sentence.
 - If the user greets you, greet back and name the current destination context.
 - If the user asks broadly, explain like a helpful travel companion, not a rule engine.
 - No markdown table.
@@ -247,7 +253,7 @@ Question: {payload.question}
 """
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.45, "maxOutputTokens": 900},
+        "generationConfig": {"temperature": 0.45, "topP": 0.92, "maxOutputTokens": GEMINI_MAX_OUTPUT_TOKENS},
     }
 
     try:
@@ -258,7 +264,10 @@ Question: {payload.question}
                 json=body,
             )
             response.raise_for_status()
-            text = extract_text(response.json())
+            response_payload = response.json()
+            text = extract_text(response_payload)
+            if is_max_tokens(response_payload):
+                text = f"{text}\n\n{await continue_answer(api_key, prompt, text)}"
     except Exception:
         return fallback_answer(payload)
 
@@ -275,6 +284,34 @@ Question: {payload.question}
 def extract_text(payload: dict) -> str:
     parts = payload.get("candidates", [{}])[0].get("content", {}).get("parts", [])
     return "\n".join(part.get("text", "") for part in parts if part.get("text"))
+
+
+def is_max_tokens(payload: dict) -> bool:
+    return payload.get("candidates", [{}])[0].get("finishReason") == "MAX_TOKENS"
+
+
+async def continue_answer(api_key: str, original_prompt: str, partial_answer: str) -> str:
+    continuation_prompt = f"""
+Continue and finish the previous answer. Do not repeat the beginning. End with a complete sentence.
+
+Original instruction:
+{original_prompt}
+
+Partial answer:
+{partial_answer[-1600:]}
+"""
+    body = {
+        "contents": [{"role": "user", "parts": [{"text": continuation_prompt}]}],
+        "generationConfig": {"temperature": 0.35, "topP": 0.9, "maxOutputTokens": 1024},
+    }
+    async with httpx.AsyncClient(timeout=18.0) as client:
+        response = await client.post(
+            GEMINI_URL,
+            headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+            json=body,
+        )
+        response.raise_for_status()
+    return extract_text(response.json())
 
 
 def is_too_short(text: str, language: str) -> bool:

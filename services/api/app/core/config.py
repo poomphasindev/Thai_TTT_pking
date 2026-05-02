@@ -1,15 +1,19 @@
+import os
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
+IS_VERCEL = bool(os.getenv("VERCEL"))
+DEFAULT_DATABASE_PATH = Path("/tmp/sawasdee-transit/app.db") if IS_VERCEL else PROJECT_ROOT / "data/app.db"
+DEFAULT_UPLOAD_DIR = Path("/tmp/sawasdee-transit/uploads") if IS_VERCEL else PROJECT_ROOT / "data/uploads"
 
 
 class Settings(BaseSettings):
     app_name: str = "Thailand Tourism Transit MVP"
-    database_path: Path = PROJECT_ROOT / "data/app.db"
-    upload_dir: Path = PROJECT_ROOT / "data/uploads"
+    database_path: Path = DEFAULT_DATABASE_PATH
+    upload_dir: Path = DEFAULT_UPLOAD_DIR
     public_base_url: str = "http://127.0.0.1:8000"
     tat_api_key: str | None = None
     tat_api_base_url: str = "https://tatdataapi.io/api/v2"
