@@ -59,7 +59,7 @@ Reserved for next sprint:
 ## Tech Stack
 
 - Backend: FastAPI
-- Runtime DB: SQLite
+- Runtime DB: SQLite locally, Supabase Postgres on Vercel/production
 - Frontend: Premium mobile-first static HTML + Tailwind CDN + Vanilla JS served by FastAPI
 - QR generation: `qrcode`
 - Map UI: MapLibre GL JS using a tokenless demo style, with local image fallback
@@ -151,6 +151,7 @@ TTM_OPENAI_API_KEY=
 TTM_GOOGLE_API_KEY=
 TTM_GEMINI_API_KEY=
 
+TTM_DATABASE_URL=
 TTM_DATABASE_PATH=data/app.db
 TTM_UPLOAD_DIR=data/uploads
 TTM_PUBLIC_BASE_URL=http://127.0.0.1:8000
@@ -173,6 +174,7 @@ Notes:
 - Backend already calls tokenless OpenStreetMap Overpass for nearby POIs.
 - Backend should call Google Places, Longdo, MapTiler, Mapbox, TAT, or OpenAI APIs if those providers are enabled later.
 - Gemini copilot uses `TTM_GEMINI_API_KEY`; if that is empty, it can use `TTM_GOOGLE_API_KEY` for Google AI Studio compatibility.
+- If `TTM_DATABASE_URL` is set, the API uses Supabase/Postgres. If it is empty, local SQLite is used.
 - Runtime files under `data/` and `services/api/data/` are ignored.
 
 ## Auth Model
@@ -308,14 +310,19 @@ This repository includes Vercel preview support:
 - root `requirements.txt` is provided for Vercel Python dependency install
 - when `VERCEL=1`, SQLite and uploads default to `/tmp/sawasdee-transit/*`
 
+For Vercel, use Supabase Postgres so auth, tickets, trip scans, reports, and wallet balances persist.
+
 Set these environment variables in Vercel Project Settings:
 
 ```env
+TTM_DATABASE_URL=postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require
 TTM_GEMINI_API_KEY=your_google_ai_studio_key
 TTM_PUBLIC_BASE_URL=https://your-vercel-domain.vercel.app
 ```
 
-Important: Vercel `/tmp` storage is ephemeral. It is fine for judges to try the prototype, but data can reset between cold starts.
+Run [services/api/migrations/001_supabase_schema.sql](./services/api/migrations/001_supabase_schema.sql) once in the Supabase SQL Editor before the first deploy.
+
+If `TTM_DATABASE_URL` is not set on Vercel, the app falls back to `/tmp/sawasdee-transit/*`; that is only a throwaway preview mode and can reset between cold starts.
 
 For Vercel-style serverless deployment, SQLite files are not a reliable persistent database because serverless instances can be ephemeral and concurrent writes are not ideal. The recommended production upgrade is:
 

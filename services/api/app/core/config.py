@@ -12,6 +12,7 @@ DEFAULT_UPLOAD_DIR = Path("/tmp/sawasdee-transit/uploads") if IS_VERCEL else PRO
 
 class Settings(BaseSettings):
     app_name: str = "Thailand Tourism Transit MVP"
+    database_url: str | None = None
     database_path: Path = DEFAULT_DATABASE_PATH
     upload_dir: Path = DEFAULT_UPLOAD_DIR
     public_base_url: str = "http://127.0.0.1:8000"

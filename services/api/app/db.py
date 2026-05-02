@@ -1,9 +1,16 @@
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
 from app.core.config import get_settings
+
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+except ImportError:  # pragma: no cover - optional until Supabase/Postgres is enabled
+    psycopg = None
+    dict_row = None
 
 
 SCHEMA = """
@@ -120,9 +127,16 @@ CREATE INDEX IF NOT EXISTS idx_trip_sessions_user_status ON trip_sessions(user_i
 CREATE INDEX IF NOT EXISTS idx_trip_scans_trip_id ON trip_scans(trip_id, sequence_no);
 """
 
-
 def init_db() -> None:
     settings = get_settings()
+    if settings.database_url:
+        if psycopg is None:
+            raise RuntimeError("TTM_DATABASE_URL is set, but psycopg is not installed.")
+        with psycopg.connect(settings.database_url, autocommit=True, row_factory=dict_row) as conn:
+            for statement in _split_sql_script(SCHEMA):
+                conn.execute(statement)
+        return
+
     settings.database_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(settings.database_path) as conn:
         conn.executescript(SCHEMA)
@@ -133,19 +147,49 @@ def init_db() -> None:
 
 
 @contextmanager
-def get_conn() -> Iterator[sqlite3.Connection]:
+def get_conn() -> Iterator[Any]:
     settings = get_settings()
-    conn = sqlite3.connect(settings.database_path)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-        conn.commit()
-    finally:
-        conn.close()
+    if settings.database_url:
+        if psycopg is None:
+            raise RuntimeError("TTM_DATABASE_URL is set, but psycopg is not installed.")
+        conn = psycopg.connect(settings.database_url, row_factory=dict_row)
+        wrapped = PostgresCompatConnection(conn)
+        try:
+            yield wrapped
+            conn.commit()
+        finally:
+            conn.close()
+    else:
+        conn = sqlite3.connect(settings.database_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+            conn.commit()
+        finally:
+            conn.close()
 
 
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+
+
+class PostgresCompatConnection:
+    def __init__(self, conn: Any) -> None:
+        self.conn = conn
+
+    def execute(self, query: str, params: Any = None):
+        return self.conn.execute(self._convert_placeholders(query), params)
+
+    def executescript(self, script: str) -> None:
+        self.conn.execute(script)
+
+    @staticmethod
+    def _convert_placeholders(query: str) -> str:
+        return query.replace("?", "%s")
+
+
+def _split_sql_script(script: str) -> list[str]:
+    return [statement.strip() for statement in script.split(";") if statement.strip()]
 
 
 def _ensure_report_columns(conn: sqlite3.Connection) -> None:
