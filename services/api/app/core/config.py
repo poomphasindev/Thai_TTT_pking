@@ -5,7 +5,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
-IS_VERCEL = bool(os.getenv("VERCEL"))
+IS_VERCEL = bool(os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or os.getenv("VERCEL_URL"))
 DEFAULT_DATABASE_PATH = Path("/tmp/sawasdee-transit/app.db") if IS_VERCEL else PROJECT_ROOT / "data/app.db"
 DEFAULT_UPLOAD_DIR = Path("/tmp/sawasdee-transit/uploads") if IS_VERCEL else PROJECT_ROOT / "data/uploads"
 
@@ -36,4 +36,11 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if IS_VERCEL:
+        # Vercel deployments are read-only except for /tmp. Environment variables
+        # copied from local development may still point at data/*, so normalize
+        # runtime-only paths at startup before FastAPI creates upload folders.
+        settings.database_path = Path("/tmp/sawasdee-transit/app.db")
+        settings.upload_dir = Path("/tmp/sawasdee-transit/uploads")
+    return settings
